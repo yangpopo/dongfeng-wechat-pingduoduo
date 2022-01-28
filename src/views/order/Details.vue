@@ -96,13 +96,6 @@ export default {
   // 生命周期
   mounted() {
     this.orderId = this.$route.query.orderId;
-    // for (let i = 0; i < this.orderList.length; i++) {
-    //   if (this.orderList[i].id == this.orderId) {
-    //     this.order = this.orderList[i];
-    //     console.log(this.order);
-    //     break
-    //   }
-    // }
     this.getOrderDetails();
   },
 
@@ -112,6 +105,12 @@ export default {
     getOrderDetails() {
       this.$axios.post(ORDER_QUERY_ONE, {orderId: this.orderId}).then(res => {
         if (res.code == 0) {
+          if(res.data.detailImg != null) {
+            res.data.detailImg = res.data.detailImg.split(",");
+          } else {
+            res.data.detailImg = [];
+          }
+          
           this.order = res.data;
         } else {
           Toast(res.msg);
