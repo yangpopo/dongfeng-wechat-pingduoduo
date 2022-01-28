@@ -1,27 +1,100 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    redirect: '/bargaining'
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/bargaining',
+    component: () => import(/* webpackChunkName: "bargaining" */ '../views/bargaining/Index.vue'),
+    meta:{title:"砍价"},
+    children: [
+      {
+        path: '',
+        name: 'bargaining',
+        meta:{title:"砍价"},
+        component: () => import(/* webpackChunkName: "Home" */ '../views/bargaining/Home.vue'),
+      },
+      {
+        path: 'bargaining-betails',
+        name: 'bargainingDetails',
+        meta:{title:"砍价详情"},
+        component: () => import(/* webpackChunkName: "Details" */ '../views/bargaining/Details.vue'),
+      },
+      {
+        path: 'pay-result',
+        name: 'BargainingPayResult',
+        meta:{title:"支付"},
+        component: () => import(/* webpackChunkName: "PayResult" */ '../views/bargaining/PayResult.vue'),
+      }
+    ]
+  },
+  {
+    path: '/collage',
+    meta:{title:"拼团"},
+    component: () => import(/* webpackChunkName: "collageIndex" */ '../views/collage/Index.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Collage',
+        meta:{title:"拼团"},
+        component: () => import(/* webpackChunkName: "Home" */ '../views/collage/Home.vue'),
+      },
+      {
+        path: 'my-collage',
+        name: 'MyCollage',
+        meta:{title:"我的拼团"},
+        component: () => import(/* webpackChunkName: "MyCollage" */ '../views/collage/MyCollage.vue'),
+      },
+      {
+        path: 'pay-result',
+        name: 'CollagePayResult',
+        meta:{title:"支付"},
+        component: () => import(/* webpackChunkName: "PayResult" */ '../views/collage/PayResult.vue'),
+      },
+    ]
+  },
+  {
+    path: '/order',
+    meta:{title:"订单中心"},
+    component: () => import(/* webpackChunkName: "collageIndex" */ '../views/order/Index.vue'),
+    children: [
+      {
+        path: '',
+        name: 'order',
+        meta:{title:"订单中心"},
+        component: () => import(/* webpackChunkName: "Home" */ '../views/order/Home.vue'),
+      },{
+        path: 'order-details',
+        name: 'orderDetails',
+        meta:{title:"订单详情"},
+        component: () => import(/* webpackChunkName: "Details" */ '../views/order/Details.vue'),
+      },
+      {
+        path: 'pay-result',
+        name: 'CollagePayResult',
+        meta:{title:"支付"},
+        component: () => import(/* webpackChunkName: "PayResult" */ '../views/order/PayResult.vue'),
+      },
+    ]
   }
 ]
 
 const router = new VueRouter({
   routes
+})
+
+//全局后置钩子，不需要主动调用next()函数
+router.afterEach((to,from) => {
+  if (to.meta.title != undefined) {
+    document.title = to.meta.title;
+  } else {
+    document.title = "";
+  }
 })
 
 export default router
