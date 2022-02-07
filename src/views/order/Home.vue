@@ -26,7 +26,7 @@ import Navigation from '@/components/Navigation.vue';
 import OrderCollage from "@/components/OrderCollage";
 import OrderBargaining from "@/components/OrderBargaining";
 import { PullRefresh, List, Toast, Dialog } from 'vant';
-import { mapState, mapMutations } from 'vuex'
+import { mapState } from 'vuex';
 import { ORDER_ORDER_PAGE } from '@/request/api';
 
 
@@ -64,7 +64,6 @@ export default {
 
   // 事件
   methods:{
-    // ...mapMutations(['cacheOrderList']),
     // 返回按钮
     returnEmit() {
       this.$router.go(-1);
@@ -113,7 +112,6 @@ export default {
             }
             this.orderList.push(item);
           })
-          // this.cacheOrderList(this.orderList);
           this.page.startPage++;
         } else {
           Toast(res.msg);
