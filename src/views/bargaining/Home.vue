@@ -72,6 +72,7 @@
 </template>
 
 <script>
+import appApi from '@/assets/js/appApi.js';
 import { Swiper, SwiperSlide, directive } from 'vue-awesome-swiper';
 import 'swiper/css/swiper.min.css';
 import { mapState } from 'vuex';
@@ -95,7 +96,7 @@ export default {
     return {
       // 轮播配置
       swiperOptions: {
-        autoplay: true,     // 把这里的3000改为true就可以了、
+        autoplay: true, // 把这里的3000改为true就可以了、
         pagination:  {
           el: ".swiper-pagination",
         },
@@ -130,7 +131,13 @@ export default {
   // 事件
   methods:{
     returnEmit() {
-      this.$router.go(-1);
+      if (this.type == 'app') {
+        // app关闭窗口  
+        appApi.closePage();
+      } else {
+        // 微信关闭窗口
+        wx.miniProgram.navigateBack();
+      }
     },
     // 获取
     getBargainingInfo() {
@@ -151,7 +158,7 @@ export default {
             res.data.images = [];
           }
           this.activityDownTime = res.data.endTime - this.currentTime;
-          this.bargainingInfo = res.data
+          this.bargainingInfo = res.data;
         } else {
           Toast(res.mes);
         }
@@ -163,12 +170,16 @@ export default {
       this.activityInfo = {
         type: false,
         titleData: '填写信息',
-        id: this.bargainingInfo.id,
+        id: this.bargainingInfo.id, // 砍价活动id
         price: this.bargainingInfo.deposit,
-        butData: '提交'
+        butData: '提交',
+        carSeriesId: this.bargainingInfo.carSeriesId, // 车系id
+        carModelId: this.bargainingInfo.carModelId, // 车型id
+        factory: this.bargainingInfo.factory, // 1小康，2风光
       }
-      console.log(this.activityInfo);
-      this.$refs.orderInfo.showState(true);
+      this.$nextTick(() => {
+        this.$refs.orderInfo.showState(true);
+      });
     },
 
     // 继续砍价
@@ -178,7 +189,6 @@ export default {
 
     // 跳转详情
     jumpDetails(res) {
-      console.log(res, "-----");
       if (res.state == true) {
         // 砍价成功
         this.$refs.orderInfo.showState(false);

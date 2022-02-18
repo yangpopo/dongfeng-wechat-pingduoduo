@@ -9,7 +9,7 @@
         </div>
         <div class="unit-box">
           <b>电话</b>
-          <input class="input-box" type="number" placeholder="请输入电话" v-model="phone" @blur="filterWords" maxlength="20">
+          <input class="input-box" type="number" placeholder="请输入电话" v-model="phone" @blur="filterWords" maxlength="11">
         </div>
         <div class="unit-box">
           <b>省市</b>
@@ -52,7 +52,7 @@
 <script>
 import MaskBox from "@/components/MaskBox";
 import { Toast, Dialog } from 'vant';
-import { CLUEACTIVITY_PROVINCE, CLUEACTIVITY_CITY,  GROUPBUY_GET_DEALER_BY_CITY_ID, GROUPBUY_ADD_ORDER, GROUPBUY_ADD_TEAM } from "@/request/api";
+import { SHOP_PROVINCE, SHOP_CITY,  GROUPBUY_SHOP_DEALER, GROUPBUY_ADD_ORDER, GROUPBUY_ADD_TEAM } from "@/request/api";
 
 export default {
   name: 'OrderInfo',
@@ -68,6 +68,7 @@ export default {
           id: 1, // 活动id
           type: true, // true: 创造拼团 false: 参与拼团
           price: 0, // 定金价格
+          factory: 1, // 1小康，2风光
         }
       }
     },
@@ -96,7 +97,7 @@ export default {
   },
   // 生命周期
   async mounted() {
-    await this.getProvinceList(); // 获取省信息
+    
   },
   watch: {
     activityInfo(newVal, oldVal) {
@@ -118,12 +119,12 @@ export default {
     // 获取省信息
     async getProvinceList() {
       this.areaLoading = true;
-      await this.$axios.post(CLUEACTIVITY_PROVINCE, {type: 0}).then((res) => {
+      await this.$axios.post(SHOP_PROVINCE, {factory: this.activityInfo.factory}).then((res) => {
         if (res.code == 0) {
           this.areaLoading = false;
           res.data.forEach(item => {
             item['name'] = item.provinceName;
-            item['addressCode'] = item.provinceId;
+            item['provinceId'] = item.provinceId;
           })
           this.areaColumns = [{values: res.data}, {values:[]}];
         } else {
@@ -134,12 +135,12 @@ export default {
     // 获取城市信息
     async getCityList(id) {
       this.areaLoading = true;
-      return await this.$axios.post(CLUEACTIVITY_CITY, {provinceId: id}).then((res) => {
+      return await this.$axios.post(SHOP_CITY, {provinceId: id, factory: this.activityInfo.factory}).then((res) => {
         if (res.code == 0) {
           this.areaLoading = false;
           res.data.forEach(item => {
             item['name'] = item.cityName;
-            item['addressCode'] = item.cityId;
+            item['cityId'] = item.cityId;
           })
           return res.data
         } else {
@@ -150,14 +151,14 @@ export default {
     // 切换省市信息
     async switchArea(picker, values) {
       // 只有当更新省的时候才请求市的数据
-      if (this.areaCodeOld != values[0].addressCode) {
-        let cityList = await this.getCityList(values[0].addressCode);
-        this.areaCodeOld = values[0].addressCode; // 赋值旧的省code
+      if (this.areaCodeOld != values[0].provinceId) {
+        let cityList = await this.getCityList(values[0].provinceId);
+        this.areaCodeOld = values[0].provinceId; // 赋值旧的省code
         picker.setColumnValues(1, cityList);
       }
     },
     // 显示隐藏
-    showState(state) {
+    async showState(state) {
       if (state == true) {
         this.userName = ''; // 姓名
         this.phone = ''; // 电话
@@ -173,6 +174,7 @@ export default {
         this.areaCodeOld = ''; // 旧的省市code
         this.initArea = true; // 初始化地址信息
       }
+      await this.getProvinceList(); // 获取省信息
       this.$refs.addressPopup.showState = state;
     },
     // 打开区域
@@ -180,7 +182,7 @@ export default {
       this.areaActionSheetShow = true;
       if (this.initArea == true) {
         this.$nextTick(async () => {
-          let cityList = await this.getCityList(this.areaColumns[0].values[0].addressCode);
+          let cityList = await this.getCityList(this.areaColumns[0].values[0].provinceId);
           this.$refs.areaPicker.setColumnValues(1, cityList);
           this.initArea = false;
         })
@@ -189,10 +191,10 @@ export default {
 
     // 区域弹窗确认
     areaConfirm(value, index) {
-      this.cityId = value[1].addressCode; // 城市id 
-      this.cityName = value[1].name; // 城市名称
-      this.provinceId = value[0].addressCode, // 省份id
-      this.provinceName = value[0].name; // 省份名称
+      this.cityId = value[1].cityCode; // 城市id 
+      this.cityName = value[1].cityName; // 城市名称
+      this.provinceId = value[0].provinceId, // 省份id
+      this.provinceName = value[0].provinceName; // 省份名称
       this.areaActionSheetShow = false;
       this.dealerName = '';
       this.dealerId = '';
@@ -219,7 +221,7 @@ export default {
 
     // 获取区域经销商信息
     async getDealerLis() {
-      await this.$axios.post(GROUPBUY_GET_DEALER_BY_CITY_ID, { cityId: this.cityId }).then(res => {
+      await this.$axios.post(GROUPBUY_SHOP_DEALER, { factory: this.activityInfo.factory ,cityId: this.cityId, carSeriesId: this.activityInfo.carSeriesId }).then(res => {
         if (res.code == 0) {
           this.dealerColumns = [{values: res.data}];
         } else {
@@ -258,6 +260,9 @@ export default {
         provinceName: this.provinceName, // 省份名称
         price: this.activityInfo.price, // 订金
         target: this.activityInfo.id, // 拼团/砍价id
+        carSeriesId: this.activityInfo.carSeriesId, // 车系id
+        carModelId: this.activityInfo.carModelId, // 车型id
+        factory: this.activityInfo.factory, // 1小康，2风光
       };
       // if (this.type == true) {
       //   // 确认信息

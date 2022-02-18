@@ -7,7 +7,7 @@
         <dt>支付成功</dt>
         <dd>您可凭身份证明和订单记录<br />到经销商门店支付尾款</dd>
       </dl>
-      <div class="pay-but">查看订单</div>
+      <div class="pay-but" @click="viewOrder">查看订单</div>
     </div>
     <!-- 支付失败 -->
     <div class="pay-box" v-else>
@@ -23,6 +23,7 @@
 
 <script>
 import MaskBox from "@/components/MaskBox";
+import { mapState } from 'vuex';
 
 export default {
   name: 'PayResult',
@@ -32,28 +33,36 @@ export default {
   data() {
     return {
       result: false, // 结果状态
-      id: '',
-      customerBargainId: ''
+      id: '', // 订单id
+      orderNo: '', // 订单编号
+      customerBargainId: '', // 砍价id
     }
   },
 
   // 计算属性
   computed: {
+    ...mapState(['token', 'type']),
   },
 
   // 生命周期
   mounted() {
-    this.result = this.$route.query.result;
-    this.id = this.$route.query.id || null;
-    this.customerBargainId = this.$route.query.customerBargainId || null;
+    this.result = this.$route.query.result == 'true' ? true : false;
+    this.id = this.$route.query.id || ''; // 订单id
+    this.orderNo = this.$route.query.orderNo || ''; // 订单id
+    this.customerBargainId = this.$route.query.customerBargainId || null; // 砍价id
   },
 
   // 事件
   methods:{
     // 返回页面
     returnPage() {
-      this.$router.go(-1);
-    }
+      this.$router.push({ path: "/bargaining/bargaining-betails", query: {customerBargainId: this.customerBargainId, orderNo: this.orderNo,token: this.token, type: this.type} });
+    },
+
+    // 查看订单
+    viewOrder() {
+      this.$router.push({ path: "/order/order-details", query:{ orderId: this.id, token: this.token, type: this.type} });
+    },
   }
 }
 </script>

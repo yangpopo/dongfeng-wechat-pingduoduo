@@ -38,8 +38,9 @@ export default {
       let payData = this.payInfo;
       let success = process.env.VUE_APP_SERVER_URL + '#' + this.jumpLink + '&result=true'; //支付成功后跳转的地址
       let fail = process.env.VUE_APP_SERVER_URL + '#' + this.jumpLink + '&result=false'; //支付失败后跳转的地址
-      console.log(success)
+      console.log(success);
       console.log(fail);
+      console.log(payData);
       wx.miniProgram.redirectTo({
         url:'/pages/webpage/pay?data=' +
         encodeURIComponent(JSON.stringify(payData)) +

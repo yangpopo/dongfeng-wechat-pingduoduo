@@ -44,7 +44,7 @@
 
     <!-- 经销商选择 -->
     <van-action-sheet v-model="dealerActionSheetShow" :closeable="false">
-      <van-picker ref="dealerPicker" value-key="dealerName" show-toolbar title="选择经销商" :columns="dealerColumns" @confirm="dealerConfirm"   @cancel="dealerCancel" />
+      <van-picker ref="dealerPicker" value-key="dealerName" show-toolbar title="选择经销商" :columns="dealerColumns" @confirm="dealerConfirm" @cancel="dealerCancel" />
     </van-action-sheet>
   </mask-box>
 </template>
@@ -52,7 +52,7 @@
 <script>
 import MaskBox from "@/components/MaskBox";
 import { Toast, Dialog } from 'vant';
-import { CLUEACTIVITY_PROVINCE, CLUEACTIVITY_CITY, BARGAIN_ADD_ORDER, BARGAIN_PAY, BARGAIN_DEALERLIST, BARGAIN_ORDER_INFO } from "@/request/api";
+import { SHOP_PROVINCE, SHOP_CITY, BARGAIN_ADD_ORDER, BARGAIN_PAY, BARGAIN_DEALERLIST, BARGAIN_ORDER_INFO } from "@/request/api";
 
 export default {
   name: 'OrderInfo',
@@ -70,6 +70,10 @@ export default {
           id: '',
           price: '', // 定金
           butData: '提交', // 按钮样式
+          carSeriesId: -1, // 车系id
+          carModelId: -1, // 车型id
+          factory: 1, // 1小康，2风光
+          orderName: null, // 活动名称
         }
       }
     },
@@ -85,7 +89,7 @@ export default {
       provinceId: '', // 省份id
       provinceName: '', // 省份名称
       price: '', // 订金
-      activityId: '', // 砍价id
+      activityId: '', // 砍价活动id
       target: '', // 用户砍价id
       orderId: '', // 订单id
       orderNo: '', // 订单编号
@@ -102,17 +106,11 @@ export default {
   },
   // 生命周期
   async mounted() {   
-    Toast.loading({
-      message: '加载中...',
-      forbidClick: true,
-      duration: 0,
-    });
-    await this.getProvinceList(); // 获取省信息
-    Toast.clear();
+    
   },
   watch: {
     async activityInfo(newVal, oldVal) {
-      this.price = newVal.deposit;
+      this.price = newVal.price;
       this.activityId = newVal.id;
       if (newVal.type == true) {
         this.target = newVal.id;
@@ -153,7 +151,7 @@ export default {
     // 获取省信息
     async getProvinceList() {
       this.areaLoading = true;
-      await this.$axios.post(CLUEACTIVITY_PROVINCE, {type: 0}).then((res) => {
+      await this.$axios.post(SHOP_PROVINCE, {factory: this.activityInfo.factory}).then((res) => {
         if (res.code == 0) {
           this.areaLoading = false;
           res.data.forEach(item => {
@@ -169,7 +167,7 @@ export default {
     // 获取城市信息
     async getCityList(id) {
       this.areaLoading = true;
-      return await this.$axios.post(CLUEACTIVITY_CITY, {provinceId: id}).then((res) => {
+      return await this.$axios.post(SHOP_CITY, {provinceId: id, factory: this.activityInfo.factory}).then((res) => {
         if (res.code == 0) {
           this.areaLoading = false;
           res.data.forEach(item => {
@@ -192,7 +190,7 @@ export default {
       }
     },
     // 显示隐藏
-    showState(state) {
+    async showState(state) {
       if ((state == true) && (this.activityInfo.type == false)) {
         this.userName = ''; // 姓名
         this.phone = ''; // 电话
@@ -208,10 +206,17 @@ export default {
         this.areaCodeOld = ''; // 旧的省市code
         this.initArea = true; // 初始化地址信息
       }
+      Toast.loading({
+        message: '加载中...',
+        forbidClick: true,
+        duration: 0,
+      });
+      await this.getProvinceList(); // 获取省信息
+      Toast.clear();
       this.$refs.addressPopup.showState = state;
     },
     // 打开区域
-     openArea() {
+    openArea() {
       this.areaActionSheetShow = true;
       if (this.initArea == true) {
         this.$nextTick(async () => {
@@ -224,9 +229,9 @@ export default {
 
     // 区域弹窗确认
     areaConfirm(value, index) {
-      this.cityId = value[1].addressCode; // 城市id 
+      this.cityId = value[1].cityCode; // 城市id 
       this.cityName = value[1].name; // 城市名称
-      this.provinceId = value[0].addressCode, // 省份id
+      this.provinceId = value[0].provinceId, // 省份id
       this.provinceName = value[0].name; // 省份名称
       this.areaActionSheetShow = false;
     },
@@ -253,10 +258,11 @@ export default {
     // 获取区域经销商信息
     async getDealerLis() {
       let data = {
-        types: 1,
+        factory: this.activityInfo.factory, // 1小康，2风光
         bargainId: this.activityInfo.id, // 砍价活动id
-        province: this.provinceName,
-        city: this.cityName
+        province: this.provinceName, // 省份名称
+        cityId: this.cityId, // 城市id
+        city: this.cityName, // 城市名称
       };
       await this.$axios.post(BARGAIN_DEALERLIST, { ...data }).then(res => {
         if (res.code == 0) {
@@ -303,21 +309,29 @@ export default {
           target: this.target, // 用户的砍价id
           id: this.orderId, // 订单id
           orderNo: this.orderNo, // 订单编号
+          factory: this.activityInfo.factory, // 1小康，2风光
+          carSeriesId: this.activityInfo.carSeriesId, // 车系id
+          carModelId: this.activityInfo.carModelId, // 车型id
+          orderName: this.activityInfo.orderName, // 活动名称
         };
         url = BARGAIN_PAY;
       } else {
         // 提交订单
         data = {
-          userName: this.userName, // 姓名
-          phone: this.phone, // 电话
-          dealerName: this.dealerName, // 经销商名称
-          dealerId: this.dealerId, // 经销商id
-          cityId: this.cityId, // 城市id 
-          cityName: this.cityName, // 城市名称
+          price: this.price, // 订金
           provinceId: this.provinceId, // 省份id
           provinceName: this.provinceName, // 省份名称
-          price: this.price, // 订金
-          activityId: this.activityId, // 拼团/砍价id
+          cityName: this.cityName, // 城市名称
+          cityId: this.cityId, // 城市id
+          dealerId: this.dealerId, // 经销商id
+          dealerName: this.dealerName, // 经销商名称
+          phone: this.phone, // 电话
+          userName: this.userName, // 姓名
+          target: this.target, // 用户砍价id
+          activityId: this.activityId, // 砍价活动id
+          carSeriesId: this.activityInfo.carSeriesId, // 车系id
+          carModelId: this.activityInfo.carModelId, // 车型id
+          factory: this.activityInfo.factory, // 1小康，2风光
         };
         url = BARGAIN_ADD_ORDER;
       }

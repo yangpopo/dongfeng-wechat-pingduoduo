@@ -45,7 +45,7 @@ export default {
 
   // 生命周期
   mounted() {
-    this.result = this.$route.query.result;
+    this.result = this.$route.query.result == 'true' ? true : false;
     this.id = this.$route.query.id || null;
     this.teamId = this.$route.query.teamId || null;
   },
@@ -54,7 +54,7 @@ export default {
   methods:{
     // 返回页面
     returnPage() {
-      this.$router.push({ path: "/my-collage", query:{ id: this.id, tempId: this.tempId } });
+      this.$router.push({ path: "/my-collage", query:{ id: this.id, tempId: this.tempId, token: this.token, type: this.type } });
       // this.$router.go(-1);
     },
 

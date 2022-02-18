@@ -1,10 +1,8 @@
 // 小程序相关接口
 export const APPLET_CUSTOMER_INFO = '/api/customer/customerInfo'; // 用户信息
 
-
-// 获取城市区域
-export const CLUEACTIVITY_PROVINCE = '/api/car/getProvince'; // 省份
-export const CLUEACTIVITY_CITY = '/api/car/getCity'; // 城市
+export const SHOP_PROVINCE = '/api/shopArea/shopProvince'; // 获取-商城省份信息
+export const SHOP_CITY = '/api/shopArea/shopCity'; // 获取-商城城市信息
 
 
 // 砍价
@@ -23,7 +21,7 @@ export const BARGAIN_PAY = '/api/bargain/activity/pay'; // 砍价-订单信息�
 export const GROUPBUY_QUERY_ONE = '/api/groupBuy/queryOne'; // 拼团详情
 export const GROUPBUY_ADD_TEAM = '/api/groupBuy/addTeam'; // 发起自己的拼团
 export const GROUPBUY_ADD_ORDER = '/api/groupBuy/addOrder'; // 参加别人的拼团
-export const GROUPBUY_GET_DEALER_BY_CITY_ID = '/api/car/getDealerByCityId'; // 拼团活动-经销商列表
+export const GROUPBUY_SHOP_DEALER = '/api/shopArea/shopDealer'; // 拼团活动-经销商列表
 
 
 

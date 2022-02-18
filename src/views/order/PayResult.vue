@@ -1,13 +1,13 @@
 <template>
   <div class="pay-result">
     <!-- 支付成功 -->
-    <div class="pay-box" v-if="0">
+    <div class="pay-box" v-if="result">
       <img class="payment-icon" src="../../assets/img/payment-success.png" alt="">
       <dl class="explain">
         <dt>支付成功</dt>
         <dd>您可凭身份证明和订单记录<br />到经销商门店支付尾款</dd>
       </dl>
-      <div class="pay-but">查看订单</div>
+      <div class="pay-but" @click="viewOrder">查看订单</div>
     </div>
     <!-- 支付失败 -->
     <div class="pay-box" v-else>
@@ -23,6 +23,7 @@
 
 <script>
 import MaskBox from "@/components/MaskBox";
+import { mapState } from 'vuex';
 
 export default {
   name: 'PayResult',
@@ -31,25 +32,33 @@ export default {
   },
   data() {
     return {
-      
+      result: false, // 结果状态
+      orderId: null, // 订单id
     }
   },
 
   // 计算属性
   computed: {
+    ...mapState(['token', 'type']),
   },
 
   // 生命周期
   mounted() {
-    
+    this.result = this.$route.query.result == 'true' ? true : false;
+    this.orderId = this.$route.query.orderId; // 订单id
   },
 
   // 事件
   methods:{
     // 返回页面
     returnPage() {
-      this.$router.go(-1);
-    }
+      this.$router.push({ path: "/order/order-details", query:{ orderId: this.orderId, token: this.token, type: this.type} });
+    },
+
+    // 查看订单
+    viewOrder() {
+      this.$router.push({ path: "/order/order-details", query:{ orderId: this.orderId, token: this.token, type: this.type} });
+    },
   }
 }
 </script>

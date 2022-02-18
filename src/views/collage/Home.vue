@@ -85,6 +85,7 @@
 </template>
 
 <script>
+import appApi from '@/assets/js/appApi.js';
 import { Swiper, SwiperSlide, directive } from 'vue-awesome-swiper';
 import 'swiper/css/swiper.min.css';
 import MaskBox from "@/components/MaskBox";
@@ -163,7 +164,13 @@ export default {
     },
     // 返回按钮
     returnEmit() {
-      this.$router.go(-1);
+      if (this.type == 'app') {
+        // app关闭窗口  
+        appApi.closePage();
+      } else {
+        // 微信关闭窗口
+        wx.miniProgram.navigateBack();
+      }
     },
     // 我的拼团
     myOrder() {
@@ -175,8 +182,13 @@ export default {
         type: true,
         id: this.model.id,
         price: this.model.price,
+        factory: this.model.factory, // 1小康，2风光
+        carSeriesId: this.model.carSeriesId, // 车系id
+        carModelId: this.model.carModelId, // 车型id
       }
-      this.$refs.orderInfo.showState(true);
+      this.$nextTick(() => {
+        this.$refs.orderInfo.showState(true);
+      })
     },
 
     // 参加别人的拼团
@@ -185,8 +197,13 @@ export default {
         type: false,
         id: teamId,
         price: this.model.price,
+        factory: this.model.factory, // 1小康，2风光
+        carSeriesId: this.model.carSeriesId, // 车系id
+        carModelId: this.model.carModelId, // 车型id
       }
-      this.$refs.orderInfo.showState(true);
+      this.$nextTick(() => {
+        this.$refs.orderInfo.showState(true);
+      })
     },
 
     // 去支付

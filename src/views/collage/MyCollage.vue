@@ -179,7 +179,7 @@ export default {
     },
     // 返回
     returnEmit() {
-      this.$router.go(-1);
+      this.$router.push({ path: "/collage",  query:{ token: this.token, type: this.type, id: this.id} });
     },
     // 小程序分享
     shareWeChatAppBut() {

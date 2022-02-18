@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import appApi from '@/assets/js/appApi.js';
 import MaskBox from "@/components/MaskBox";
 import Navigation from '@/components/Navigation.vue';
 import OrderCollage from "@/components/OrderCollage";
@@ -44,6 +45,7 @@ export default {
       loading: false, // 是否处于上拉加载状态
       finished: false, // 是否已加载完成
       refreshing: false, // 是否处于下来刷新中状态
+      switchState: false, // 菜单切换状态
       page: {
         startPage: 1, // 当前页面
         pageSize: 10, // 一页多少数据
@@ -66,7 +68,13 @@ export default {
   methods:{
     // 返回按钮
     returnEmit() {
-      this.$router.go(-1);
+      if (this.type == 'app') {
+        // app关闭窗口  
+        appApi.closePage();
+      } else {
+        // 微信关闭窗口
+        wx.miniProgram.navigateBack();
+      }
     },
     // 切换菜单
     switchMenu(index) {
@@ -78,6 +86,7 @@ export default {
       this.refreshing = true; // 设置未下拉刷新状态
       // 修改路由参数
       this.$router.push({ path: "/order", query:{ menuIndex: this.menuIndex, token: this.token, type: this.type} });
+      this.switchState = true;
       this.getOrderList();
     },
     // 下拉刷新
@@ -93,8 +102,13 @@ export default {
     },
     // 上拉加载
     onPullUpLoad() {
-      console.log("上拉加载");
-      this.getOrderList();
+      if (this.switchState != true) {
+        console.log("上拉加载");
+        this.getOrderList();
+      } else {
+        this.switchState = false;
+      }
+      
     },
     getOrderList() {
       this.$axios.post(ORDER_ORDER_PAGE, {...this.page, types: this.menuIndex}).then(res => {

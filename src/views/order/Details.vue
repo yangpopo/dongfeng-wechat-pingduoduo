@@ -48,7 +48,7 @@
     <div class="grey but" v-else-if="order.status == 1" @click="openRefundPopup">申请退款</div>
 
     <!-- 支付 -->
-    <pay-type ref="payType" :payInfo="payInfo" jump-link="/order/pay-result" />
+    <pay-type ref="payType" :payInfo="payInfo" :jump-link="payJumpLink" />
 
     <!-- 申请退款 -->
     <mask-box ref="refundPopup">
@@ -85,6 +85,7 @@ export default {
       orderId: '', // 订单id
       order: {}, // 订单数据
       payInfo: {}, // 支付信息
+      payJumpLink: '', // 支付跳转链接
     };
   },
 
@@ -119,7 +120,14 @@ export default {
     },
     // 返回
     returnEmit() {
-      this.$router.go(-1);
+      this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type} });
+      // if () {
+      //   // 从支付结果页面来
+      //   this.$router.push({ path: "/order/"});
+      // } else {
+      //   // 从订单页面来
+      //   this.$router.go(-1);
+      // }
     },
     // 去分享
     goShare() {
@@ -127,13 +135,15 @@ export default {
     },
     // 去支付
     goPay() {
-      this.$axios.post(ORDER_PAY_PARAM, {id: this.order.id}).then(res => {
-        if (res.code == 0) {
-          this.payInfo = res.data;
-          this.$refs.payType.showState = true;
-        }
+      this.payJumpLink = `/order/pay-result?orderId=${this.orderId}`;
+      this.$nextTick(() =>{
+        this.$axios.post(ORDER_PAY_PARAM, {id: this.order.id}).then(res => {
+          if (res.code == 0) {
+            this.payInfo = {...res.data, orderId: this.orderId}; 
+            this.$refs.payType.showState = true;
+          }
+        })
       })
-      
     },
 
     // 打开退款弹窗

@@ -37,7 +37,7 @@
     </div>
     <van-progress class="progress-box" :show-pivot="false" track-color="#FFF4C4" color="#FA2626" :percentage="price.success / (price.surplus + price.success) * 100" stroke-width="8" />
     <!-- 砍价成功 -->
-    <div v-if="(price.surplus == 0) && (activityEndTime >= currentTime)" class="my-link-but share-big-but" @click="payDeposit">立即下定</div>
+    <div v-if="(price.surplus == 0) && (activityEndTime >= currentTime) && (selfFlag == 1)" class="my-link-but share-big-but" @click="payDeposit">立即下定</div>
     <template v-else-if="stockFlag == 0">
       <!-- 商品没抢完 -->
       <template v-if="bargainEndTime >= currentTime">
@@ -51,8 +51,8 @@
           <!-- selfFlag 0:不是自己 -->
           <div @click="initiateMyBargaining" class="my-link-but share-big-but">发起我的砍价</div>
           <template v-if="bargainFlag == 0">
-            <!-- 没有砍过 -->
-            <div @click="helpBargaining" class="friend-link-but share-big-but">帮好友砍一刀</div>
+            <!-- 没有砍过 -- 该砍价已经完成就不显示 -->
+            <div v-if="price.surplus != 0" @click="helpBargaining" class="friend-link-but share-big-but">帮好友砍一刀</div>
           </template>
           <template v-else-if="bargainFlag == 1">
             <!-- 砍过 -->
@@ -95,7 +95,6 @@
         <div class="share-img" ref="shareImg">
           <div class="cover-box">
             <img :src="activityInfo.images[0]" alt="">
-            <!-- <img src="../../assets/img/close-01.png" alt=""> -->
           </div>
           <dl class="info-box">
             <dt>{{ activityInfo.name }}</dt>
@@ -195,6 +194,7 @@ export default {
 
   // 计算属性
   computed: {
+    ...mapState(['token', 'type']),
   },
 
   // 生命周期
@@ -225,9 +225,8 @@ export default {
 
   // 事件
   methods:{
-    ...mapState(['token', 'type']),
     returnEmit() {
-      this.$router.go(-1);
+      this.$router.push({ path: "/bargaining",  query:{ token: this.token, type: this.type, id: this.activityInfo.id} });
     },
     // 获取砍价详情
     getDetails() {
@@ -263,7 +262,7 @@ export default {
     },
     // 小程序分享
     shareWeChatAppBut() {
-      let path = `/pages/webpage/index?url=${encodeURIComponent(process.env.VUE_APP_SERVER_URL + "/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId )}`;
+      let path = `/pages/webpage/index?url=${encodeURIComponent(process.env.VUE_APP_SERVER_URL + "/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId)}`;
       console.log(path);
       wx.miniProgram.postMessage({
         data: {
@@ -286,8 +285,9 @@ export default {
     // 分享图片按钮
     shareImgBut() {
       this.$refs.shareImgPopup.showState = true;
+      let path = process.env.VUE_APP_SERVER_URL + "/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId;
       this.$nextTick(() => {
-        QRCode.toDataURL("http://www.runoob.com", {
+        QRCode.toDataURL(path, {
           width: 128,
           height: 128,
           colorDark : "#000000",
@@ -295,16 +295,23 @@ export default {
           errorCorrectionLevel: 'L'
         }, (error, url) => {
           if (error) {
+            Toast("生成二维码失败");
             console.error("生成二维码失败:", error)
           }  else {
             this.qrcode = url;
-            html2canvas(this.$refs.shareImg, {
-                allowTaint: true,
+            setTimeout(() => {
+              html2canvas(this.$refs.shareImg, {
+                allowTaint:false,
+                useCORS:true,
+                backgroundColor: 'transparent', // 设置背景透明
+                dpi: window.devicePixelRatio * 4,
+                scale: 4,
                 // "border-width": 2
               }).then((canvas) =>{
-              this.imgData = canvas.toDataURL();
-              this.pictureLoading = false;
-            })
+                this.imgData = canvas.toDataURL();
+                this.pictureLoading = false;
+              })
+            }, 1000)
           }
         })
       })
@@ -323,7 +330,9 @@ export default {
         titleData: '订单确认',
         id: this.orderInfo.id, // 订单id
         price: this.activityInfo.deposit, // 定金
-        butData: '提交并支付'
+        butData: '提交并支付',
+        factory: this.orderInfo.factory, // 1小康，2风光
+        orderName: this.orderInfo.orderName, // 活动名称
       }
       console.log(this.activityInfo.deposit)
       this.$refs.orderInfo.showState(true);
@@ -333,7 +342,7 @@ export default {
     goPay(data) {
       if (data.state == true) {
         this.payInfo = data.data;
-        this.payJumpLink = `/bargaining/pay-result?customerBargainId=${data.data.customerBargainId}&id=${data.data.orderId}`;
+        this.payJumpLink = `/bargaining/pay-result?customerBargainId=${data.data.customerBargainId}&id=${data.data.orderId}&orderNo=${data.data.orderNo}`;
         this.$refs.payType.showState = true;
       }
     },
@@ -637,7 +646,7 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 78vw;
-    height: 95vw;
+    height: 108vw;
     background-color: #FAFAFA;
     border-radius: 3vw;
     .img-data{
@@ -654,7 +663,7 @@ export default {
     .cover-box {
       position: relative;
       width: 78vw;
-      height: 50vw;
+      height: 70vw;
       overflow: hidden;
       border-radius: 3vw 3vw 0 0;
       img {
@@ -746,7 +755,7 @@ export default {
         color: #7D422F;
         position: absolute;
         left: 52%;
-        top: 15%;
+        top: 25%;
       }
     } 
     .mask-loading{
