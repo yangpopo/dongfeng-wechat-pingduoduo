@@ -66,7 +66,7 @@ export default {
 
     // 去分享
     goShare() {
-      this.$router.push({ path: "/collage/my-collage", query:{ teamId: this.OrderInfo.target, token: this.token, type: this.type} });
+      this.$router.push({ path: "/collage/my-collage", query:{ teamId: this.OrderInfo.target, token: this.token, type: this.type, ifJoin: 1} });
     }
   }
 }

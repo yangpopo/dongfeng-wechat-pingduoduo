@@ -1,9 +1,6 @@
 <template>
   <div class="home" v-if="bargainingInfo.id">
     <Navigation @return-emit="returnEmit">
-      <template v-slot:title>
-        砍价
-      </template>
     </Navigation>
     <swiper class="swiper-box" ref="mySwiper" :options="swiperOptions" v-if="bargainingInfo.images.length > 0">
       <swiper-slide class="slide-box" v-for="imgItem in bargainingInfo.images" :key="imgItem"><img class="img-slide" :src="imgItem" alt="" /></swiper-slide>
@@ -218,10 +215,10 @@ export default {
   width: 100vw;
   background-color: #fff;
   box-sizing: border-box;
-  padding-top: 14vw;
+  // padding-top: 14vw;
   position: relative;
   .swiper-box{
-    height: 65vw;
+    height: 80vw;
     .slide-box {
       position: relative;
       .img-slide {
@@ -334,6 +331,9 @@ export default {
       background-color: #FAFAFA;
       box-sizing: border-box;
       padding: 3vw;
+      /deep/ img{
+        width: 100% !important;
+      }
     }
   }
   .bottom-box {

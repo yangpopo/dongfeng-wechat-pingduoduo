@@ -1,9 +1,6 @@
 <template>
   <div class="details" v-if="activityInfo.id">
     <Navigation @return-emit="returnEmit">
-      <template v-slot:title>
-        砍价详情
-      </template>
     </Navigation>
     <div class="light-box">
       <img class="light-bg" src="../../assets/img/bargaining/light-bg.png" alt="">
@@ -37,7 +34,7 @@
     </div>
     <van-progress class="progress-box" :show-pivot="false" track-color="#FFF4C4" color="#FA2626" :percentage="price.success / (price.surplus + price.success) * 100" stroke-width="8" />
     <!-- 砍价成功 -->
-    <div v-if="(price.surplus == 0) && (activityEndTime >= currentTime) && (selfFlag == 1)" class="my-link-but share-big-but" @click="payDeposit">立即下定</div>
+    <div v-if="(price.surplus == 0) && (activityEndTime >= currentTime) && (selfFlag == 1)" class="my-link-but share-big-but" @click="payDeposit">立即下订</div>
     <template v-else-if="stockFlag == 0">
       <!-- 商品没抢完 -->
       <template v-if="bargainEndTime >= currentTime">
@@ -68,7 +65,7 @@
     <div v-if="stockFlag == 1" class="none-but share-big-but">商品抢光了</div>
 
     <!-- 好友助力 -->
-    <div class="friend-box">
+    <div class="friend-box" v-if="isMy">
       <div class="title">好友助力</div>
       <div class="friend-list">
         <template v-if="bargainList.length != 0">
@@ -189,6 +186,7 @@ export default {
       orderInfo: {}, // 订单信息
       payJumpLink: '', // 支付跳转链接
       payInfo: {}, // 支付信息
+      isMy: false, // false:不是自己发起的砍价 true: 自己发起的砍价
     }
   },
 
@@ -254,6 +252,7 @@ export default {
           this.orderInfo = res.data.orderInfo;
           this.price = res.data.price;
           this.selfFlag = res.data.selfFlag;
+          this.isMy = res.data.isMy;
           this.customerBargainInfo = res.data.customerBargainInfo; // 砍价信息
         } else {
           Toast(res.mes);
@@ -262,7 +261,7 @@ export default {
     },
     // 小程序分享
     shareWeChatAppBut() {
-      let path = `/pages/webpage/index?url=${encodeURIComponent(process.env.VUE_APP_SERVER_URL + "/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId)}`;
+      let path = `/pages/webpage/index?url=${encodeURIComponent(process.env.VUE_APP_SERVER_URL + "#/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId)}`;
       console.log(path);
       wx.miniProgram.postMessage({
         data: {
@@ -285,9 +284,12 @@ export default {
     // 分享图片按钮
     shareImgBut() {
       this.$refs.shareImgPopup.showState = true;
-      let path = process.env.VUE_APP_SERVER_URL + "/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId;
+      let path = process.env.VUE_APP_SERVER_URL + "#/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId;
+      let QRCodePath = `https://fgej76file.itqiche.com/minicode/pages/webpage/index?url=${encodeURIComponent(path)}`; // 打开小程序链接
+      console.log("path:", path);
+      console.log("QRCodePath:", QRCodePath);
       this.$nextTick(() => {
-        QRCode.toDataURL(path, {
+        QRCode.toDataURL(QRCodePath, {
           width: 128,
           height: 128,
           colorDark : "#000000",
@@ -323,7 +325,7 @@ export default {
       this.pictureLoading = true;
     },
 
-    // 下定金按钮
+    // 下订金按钮
     payDeposit() {
       this.orderInfo = {
         type: true,
@@ -396,7 +398,7 @@ export default {
     width: 100vw;
     height: 100vw;
     left: 50%;
-    top: 7vw;
+    top: 21vw;
     transform: translateX(-50%);
     overflow: hidden;
   }

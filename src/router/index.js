@@ -17,19 +17,19 @@ const routes = [
         path: '',
         name: 'bargaining',
         meta:{title:"砍价"},
-        component: () => import(/* webpackChunkName: "Home" */ '../views/bargaining/Home.vue'),
+        component: () => import(/* webpackChunkName: "bargainingHome" */ '../views/bargaining/Home.vue'),
       },
       {
         path: 'bargaining-betails',
         name: 'bargainingDetails',
         meta:{title:"砍价详情"},
-        component: () => import(/* webpackChunkName: "Details" */ '../views/bargaining/Details.vue'),
+        component: () => import(/* webpackChunkName: "bargainingDetails" */ '../views/bargaining/Details.vue'),
       },
       {
         path: 'pay-result',
         name: 'BargainingPayResult',
         meta:{title:"支付"},
-        component: () => import(/* webpackChunkName: "PayResult" */ '../views/bargaining/PayResult.vue'),
+        component: () => import(/* webpackChunkName: "BargainingPayResult" */ '../views/bargaining/PayResult.vue'),
       }
     ]
   },
@@ -42,7 +42,7 @@ const routes = [
         path: '',
         name: 'Collage',
         meta:{title:"拼团"},
-        component: () => import(/* webpackChunkName: "Home" */ '../views/collage/Home.vue'),
+        component: () => import(/* webpackChunkName: "CollageHome" */ '../views/collage/Home.vue'),
       },
       {
         path: 'my-collage',
@@ -54,31 +54,37 @@ const routes = [
         path: 'pay-result',
         name: 'CollagePayResult',
         meta:{title:"支付"},
-        component: () => import(/* webpackChunkName: "PayResult" */ '../views/collage/PayResult.vue'),
+        component: () => import(/* webpackChunkName: "CollagePayResult" */ '../views/collage/PayResult.vue'),
       },
     ]
   },
   {
     path: '/order',
-    meta:{title:"订单中心"},
+    meta:{title:"我的订单"},
     component: () => import(/* webpackChunkName: "collageIndex" */ '../views/order/Index.vue'),
     children: [
       {
         path: '',
         name: 'order',
-        meta:{title:"订单中心"},
-        component: () => import(/* webpackChunkName: "Home" */ '../views/order/Home.vue'),
-      },{
+        meta:{title:"我的订单"},
+        component: () => import(/* webpackChunkName: "orderHome" */ '../views/order/Home.vue'),
+      },
+      {
         path: 'order-details',
         name: 'orderDetails',
         meta:{title:"订单详情"},
-        component: () => import(/* webpackChunkName: "Details" */ '../views/order/Details.vue'),
+        component: () => import(/* webpackChunkName: "orderDetails" */ '../views/order/Details.vue'),
+      },{
+        path: 'order-love-details',
+        name: 'orderLoveDetails',
+        meta:{title:"订单详情"},
+        component: () => import(/* webpackChunkName: "LoveDetails" */ '../views/order/LoveDetails.vue'),
       },
       {
         path: 'pay-result',
         name: 'CollagePayResult',
         meta:{title:"支付"},
-        component: () => import(/* webpackChunkName: "PayResult" */ '../views/order/PayResult.vue'),
+        component: () => import(/* webpackChunkName: "CollagePayResult" */ '../views/order/PayResult.vue'),
       },
     ]
   }

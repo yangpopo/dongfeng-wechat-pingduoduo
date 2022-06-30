@@ -21,7 +21,7 @@ export const BARGAIN_PAY = '/api/bargain/activity/pay'; // 砍价-订单信息�
 export const GROUPBUY_QUERY_ONE = '/api/groupBuy/queryOne'; // 拼团详情
 export const GROUPBUY_ADD_TEAM = '/api/groupBuy/addTeam'; // 发起自己的拼团
 export const GROUPBUY_ADD_ORDER = '/api/groupBuy/addOrder'; // 参加别人的拼团
-export const GROUPBUY_SHOP_DEALER = '/api/shopArea/shopDealer'; // 拼团活动-经销商列表
+export const GROUPBUY_DEALER = '/api/groupBuy/dealer'; // 拼团活动-经销商列表
 
 
 
@@ -30,6 +30,9 @@ export const ORDER_ORDER_PAGE = '/api/app/order/orderPage'; // 订单列表
 export const ORDER_PAY_PARAM = '/api/app/order/payParam'; // 订单支付
 export const ORDER_REFUND = '/api/app/order/refund'; // 退款
 export const ORDER_QUERY_ONE = '/api/app/order/queryOne'; // 查询订单详情
+export const ORDER_DEL_ORDER = '/api/app/order/delOrder'; // 删除订单
+
+
 
 
 

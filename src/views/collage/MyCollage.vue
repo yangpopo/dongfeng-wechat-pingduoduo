@@ -1,9 +1,6 @@
 <template>
   <div class="my-collage" v-if="model.id">
     <Navigation @return-emit="returnEmit">
-      <template v-slot:title>
-        拼团
-      </template>
     </Navigation>
     <swiper class="swiper-box" ref="mySwiper" :options="swiperOptions" v-if="model.detailImg.length > 0">
       <swiper-slide class="slide-box" v-for="imgItem in model.detailImg" :key="imgItem"><img class="img-slide" :src="imgItem" alt="" /></swiper-slide>
@@ -26,9 +23,10 @@
     <template v-if="model.joinTeam[0].customers.length != 0">
       <div class="explain-box">
         <div class="partake-box">
-          <div class="look-out">
+          <div class="look-out" v-if="model.joinTeam[0].num != 0">
             {{ model.joinTeam[0].firstName }}发起拼团成功，还差{{ model.joinTeam[0].num }}人成团，赶快分享给好友吧！
           </div>
+          <div class="look-out" v-else>拼团成功，请及时到店购车领取权益</div>
           <div class="partake-unit">
             <div class="head">
               <div class="user-box">
@@ -41,18 +39,22 @@
               </div>
               {{ model.joinTeam[0].customers.length >= 4 ? '等' : ''}}
             </div>
-            <div class="footer" @click="goJoinCollage" v-if="(model.joinTeam[0].num != 0) && (model.myTeam == null) && (model.ifJoin != 1)">
+            <div class="footer" @click="goJoinCollage" v-if="(model.joinTeam[0].num != 0) && (model.myTeam == null) && (ifJoin != 1)">
               <img class="join-but" src="../../assets/img/collage/join-but.png" alt="">
             </div>
           </div>
         </div>
       </div>
-      <div class="common-but" v-if="model.myTeam != null" style="margin-bottom: 3vw;" @click="shareWeChatAppBut">邀请好友参加拼团</div>
-      <template v-else>
-        <!-- ifJoin 0:没有参加 1:参加了 -->
-        <div v-if="model.ifJoin == 0" class="common-but" style="margin-bottom: 3vw;" @click="goJoinCollage">立即参团</div>
-        <div class="common-but" @click="conveneMyCollage">发起我的拼团</div>
+      <template v-if="model.joinTeam[0].num != 0">
+        <div class="common-but" style="margin-bottom: 3vw;" @click="shareWeChatAppBut">邀请好友参加拼团</div>
+        <template>
+          <!-- ifJoin 0:没有参加 1:参加了 -->
+          <div v-if="ifJoin == 0" class="common-but" style="margin-bottom: 3vw;" @click="goJoinCollage">立即参团</div>
+          <div class="common-but" @click="conveneMyCollage">发起我的拼团</div>
+        </template>
       </template>
+      <div v-else class="common-but" style="margin-bottom: 3vw;" @click="returnEmit">返回首页</div>
+      
     </template>
     <div v-else class="collage-end">拼团活动已结束</div>
     
@@ -123,6 +125,7 @@ export default {
   mounted() {
     this.id = this.$route.query.id;
     this.teamId = this.$route.query.teamId || null;
+    this.ifJoin = this.$route.query.ifJoin || 0;
     this.getCollageInfo();
   },
 
@@ -143,6 +146,7 @@ export default {
           } else {
             res.data.model.detailImg = [];
           }
+          this.id = res.data.model.id;
           console.log(res.data.model.detailImg);
           this.model = res.data.model;
           this.groupList = res.data.groupList;
@@ -155,11 +159,17 @@ export default {
     goJoinCollage() {
       this.activityInfo = {
         type: false,
-        id: this.teamId,
+        id: this.model.id,
+        teamId: this.teamId,
         price: this.model.price,
+        factory: this.model.factory, // 1小康，2风光
+        carSeriesId: this.model.carSeriesId, // 车系id
+        carModelId: this.model.carModelId, // 车型id
       }
-      console.log(this.activityInfo);
-      this.$refs.orderInfo.showState(true);
+      this.$nextTick(() => {
+        console.log(this.activityInfo);
+        this.$refs.orderInfo.showState(true);
+      })
     },
 
     // 发起我的拼团
@@ -179,11 +189,11 @@ export default {
     },
     // 返回
     returnEmit() {
-      this.$router.push({ path: "/collage",  query:{ token: this.token, type: this.type, id: this.id} });
+      this.$router.push({ path: "/collage",  query:{ token: this.token, type: this.type, id: this.id, menuIndex: 1} });
     },
     // 小程序分享
     shareWeChatAppBut() {
-      let path = `/pages/webpage/index?url=${encodeURIComponent(process.env.VUE_APP_SERVER_URL + "/collage/my-collage?teamId=" + this.teamId)}`;
+      let path = `/pages/webpage/index?url=${encodeURIComponent(process.env.VUE_APP_SERVER_URL + "#/collage/my-collage?teamId=" + this.teamId)}`;
       wx.miniProgram.postMessage({
         data: {
           type: 'share_data',     //固定
@@ -211,7 +221,7 @@ export default {
   padding-bottom: 10vw;
   box-sizing: border-box;
   position: relative;
-  padding-top: 14vw;
+  // padding-top: 14vw;
   .swiper-box{
     height: 65vw;
     .slide-box {
@@ -402,6 +412,13 @@ export default {
     font-size: 3.5vw;
     text-align: center;
     color: rgb(145, 145, 145);
+  }
+  .share-lick-icon {
+    position: absolute;
+    width: 55vw;
+    height: 13vw;
+    right: 15vw;
+    top: 3vw;
   }
 }
 </style>

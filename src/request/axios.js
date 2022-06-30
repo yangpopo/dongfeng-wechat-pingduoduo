@@ -23,9 +23,10 @@ store.commit('updateType', type);
 let baseURL = "";
 if(type == "app") {
   baseURL = process.env.VUE_APP_API;
-} else if (type == null) {
+} else {
   baseURL = process.env.VUE_APP_WECHAT_API;
 }
+console.log(baseURL, '-------', type);
 
 // 创建 axios 实例
 const requests = axios.create({
@@ -57,7 +58,10 @@ requests.interceptors.response.use((response) => {
     // 登录失效|未登录
     if (type == null) {
       // 小程序跳去登录
-      wx.miniProgram.navigateTo({ url: '/pages/login/index' });
+      // wx.miniProgram.navigateTo({ url: '/pages/login/index' });
+      wx.miniProgram.redirectTo({
+        url: '/pages/login/index?next=' + encodeURIComponent('/pages/webpage/index?url=' + encodeURIComponent(location.href))
+      })
     } else {
       // app跳去登录
     }

@@ -39,12 +39,12 @@
     </div>
     <!-- 省市选择 -->
     <van-action-sheet v-model="areaActionSheetShow" :closeable="false">
-      <van-picker ref="areaPicker" show-toolbar title="选择省市" value-key="name" :loading="areaLoading" :columns="areaColumns" @confirm="areaConfirm"   @cancel="areaCancel" @change="switchArea" />
+      <van-picker swipe-duration="5" ref="areaPicker" show-toolbar title="选择省市" value-key="name" :loading="areaLoading" :columns="areaColumns" @confirm="areaConfirm"   @cancel="areaCancel" @change="switchArea" />
     </van-action-sheet>
 
     <!-- 经销商选择 -->
     <van-action-sheet v-model="dealerActionSheetShow" :closeable="false">
-      <van-picker ref="dealerPicker" value-key="dealerName" show-toolbar title="选择经销商" :columns="dealerColumns" @confirm="dealerConfirm" @cancel="dealerCancel" />
+      <van-picker swipe-duration="5" ref="dealerPicker" value-key="dealerName" show-toolbar title="选择经销商" :columns="dealerColumns" @confirm="dealerConfirm" @cancel="dealerCancel" />
     </van-action-sheet>
   </mask-box>
 </template>
@@ -205,14 +205,15 @@ export default {
         this.dealerActionSheetShow = false; // 经销商弹窗
         this.areaCodeOld = ''; // 旧的省市code
         this.initArea = true; // 初始化地址信息
+        Toast.loading({
+          message: '加载中...',
+          forbidClick: true,
+          duration: 0,
+        });
+        await this.getProvinceList(); // 获取省信息
+        Toast.clear();
       }
-      Toast.loading({
-        message: '加载中...',
-        forbidClick: true,
-        duration: 0,
-      });
-      await this.getProvinceList(); // 获取省信息
-      Toast.clear();
+      
       this.$refs.addressPopup.showState = state;
     },
     // 打开区域

@@ -1,9 +1,6 @@
 <template>
   <div class="home" v-if="model.id">
     <Navigation @return-emit="returnEmit">
-      <template v-slot:title>
-        拼团
-      </template>
     </Navigation>
     <swiper class="swiper-box" ref="mySwiper" :options="swiperOptions" v-if="model.detailImg.length > 0">
       <swiper-slide class="slide-box" v-for="imgItem in model.detailImg" :key="imgItem"><img class="img-slide" :src="imgItem" alt="" /></swiper-slide>
@@ -44,7 +41,7 @@
           </div>
           <div class="footer">
             还差<b>{{ group.num }}人</b>成团
-            <div class="join-but" @click="goJoinCollage(group.teamId)">去参团</div>
+            <div class="join-but" @click="goJoinCollage(group.customers[0].groupId, group.customers[0].teamId)">去参团</div>
           </div>
         </div>
       </div>
@@ -54,9 +51,7 @@
     </div>
     <div class="main-box">
       <div class="title">活动详情</div>
-      <div class="rich-text">
-        {{ model.content }}
-      </div>
+      <div class="rich-text" v-html="model.content"></div>
     </div>
     <div class="bottom-box">
       <div class="left-box">
@@ -69,10 +64,12 @@
           我的拼团
         </div>
       </div>
-      
-      <div class="text-but ing" @click="goCreateCollage">发起拼图</div>
-      <!-- <div class="text-but ing">继续砍价</div> -->
-      <!-- <div class="text-but ed">活动结束</div> -->
+      <template v-if="currentTime <= model.endTime">
+        <div class="text-but ing" @click="goCreateCollage">发起拼团</div>
+        <!-- <div class="text-but ing" v-if="model.ifJoin != 1" @click="goCreateCollage">发起拼团</div>
+        <div class="text-but ing" @click="goMyCollage" v-else>继续拼团</div> -->
+      </template>
+      <div v-else class="text-but ed">活动结束</div>
     </div>
     
     <!-- 订单信息 -->
@@ -124,6 +121,7 @@ export default {
       activityInfo: {}, // 活动信息
       payInfo: {}, // 支付信息
       payJumpLink: '', // 支付跳转链接
+      currentTime: new Date().getTime(),
     }
   },
 
@@ -192,10 +190,11 @@ export default {
     },
 
     // 参加别人的拼团
-    goJoinCollage(teamId) {
+    goJoinCollage(groupId, teamId) {
       this.activityInfo = {
         type: false,
-        id: teamId,
+        id: groupId,
+        teamId,
         price: this.model.price,
         factory: this.model.factory, // 1小康，2风光
         carSeriesId: this.model.carSeriesId, // 车系id
@@ -220,6 +219,11 @@ export default {
     // 跳转客服
     customerService(){
       window.location.href="https://cschat-ccs.aliyun.com/index.htm?tntInstId=_1194WK0&scene=SCE00003734"
+    },
+
+    // 跳转拼团
+    goMyCollage() {
+      this.$router.push({ path: "/collage/my-collage", query: {teamId: this.model.myTeam.teamId, id: this.model.myTeam.groupId,token: this.token, type: this.type, ifJoin: 1} });
     }
   }
 }
@@ -230,10 +234,10 @@ export default {
   width: 100vw;
   background-color: #fff;
   box-sizing: border-box;
-  padding-top: 14vw;
+  // padding-top: 14vw;
   position: relative;
   .swiper-box{
-    height: 65vw;
+    height: 80vw;
     .slide-box {
       position: relative;
       .img-slide {
@@ -420,6 +424,9 @@ export default {
       background-color: #FAFAFA;
       box-sizing: border-box;
       padding: 3vw;
+      /deep/ img{
+        width: 100% !important;
+      }
     }
   }
   .bottom-box {

@@ -1,7 +1,7 @@
 <template>
   <div class="pay-result">
     <!-- 支付成功 -->
-    <div class="pay-box" v-if="0">
+    <div class="pay-box" v-if="result">
       <img class="payment-icon" src="../../assets/img/payment-success.png" alt="">
       <dl class="explain">
         <dt>支付成功</dt>
@@ -56,7 +56,7 @@ export default {
   methods:{
     // 返回页面
     returnPage() {
-      this.$router.push({ path: "/bargaining/bargaining-betails", query: {customerBargainId: this.customerBargainId, orderNo: this.orderNo,token: this.token, type: this.type} });
+      this.$router.push({ path: "/order/", query: {token: this.token, type: this.type, menuIndex: 1} });
     },
 
     // 查看订单

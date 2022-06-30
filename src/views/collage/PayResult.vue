@@ -34,13 +34,13 @@ export default {
     return {
       result: false, // 结果状态
       id: '',
-      tempId: '',
+      teamId: '',
     }
   },
 
   // 计算属性
   computed: {
-   ...mapState(['token', 'type']),
+    ...mapState(['token', 'type']),
   },
 
   // 生命周期
@@ -54,13 +54,13 @@ export default {
   methods:{
     // 返回页面
     returnPage() {
-      this.$router.push({ path: "/my-collage", query:{ id: this.id, tempId: this.tempId, token: this.token, type: this.type } });
+      this.$router.push({ path: "/collage/my-collage", query:{ id: this.id, teamId: this.teamId, token: this.token, type: this.type } });
       // this.$router.go(-1);
     },
 
     // 跳转我的订单
     jumpMyOrder() {
-      this.$router.push({ path: "/order", query:{ menuIndex: 0, token: this.token, type: this.type} });
+      this.$router.push({ path: "/order", query:{ menuIndex: 2, token: this.token, type: this.type} });
     }
   }
 }

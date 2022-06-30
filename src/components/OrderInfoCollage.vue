@@ -39,12 +39,12 @@
     </div>
     <!-- 省市选择 -->
     <van-action-sheet v-model="areaActionSheetShow" :closeable="false">
-      <van-picker ref="areaPicker" show-toolbar title="选择省市" value-key="name" :loading="areaLoading" :columns="areaColumns" @confirm="areaConfirm"   @cancel="areaCancel" @change="switchArea" />
+      <van-picker swipe-duration="5" ref="areaPicker" show-toolbar title="选择省市" value-key="name" :loading="areaLoading" :columns="areaColumns" @confirm="areaConfirm"   @cancel="areaCancel" @change="switchArea" />
     </van-action-sheet>
 
     <!-- 经销商选择 -->
     <van-action-sheet v-model="dealerActionSheetShow" :closeable="false">
-      <van-picker ref="dealerPicker" value-key="dealerName" show-toolbar title="选择经销商" :columns="dealerColumns" @confirm="dealerConfirm"   @cancel="dealerCancel" />
+      <van-picker swipe-duration="5" ref="dealerPicker" value-key="dealerName" show-toolbar title="选择经销商" :columns="dealerColumns" @confirm="dealerConfirm"   @cancel="dealerCancel" />
     </van-action-sheet>
   </mask-box>
 </template>
@@ -52,7 +52,7 @@
 <script>
 import MaskBox from "@/components/MaskBox";
 import { Toast, Dialog } from 'vant';
-import { SHOP_PROVINCE, SHOP_CITY,  GROUPBUY_SHOP_DEALER, GROUPBUY_ADD_ORDER, GROUPBUY_ADD_TEAM } from "@/request/api";
+import { SHOP_PROVINCE, SHOP_CITY,  GROUPBUY_DEALER, GROUPBUY_ADD_ORDER, GROUPBUY_ADD_TEAM } from "@/request/api";
 
 export default {
   name: 'OrderInfo',
@@ -79,7 +79,7 @@ export default {
       phone: '', // 电话
       dealerName: '', // 经销商名称
       dealerId: '', // 经销商id
-      cityId: '', // 城市id 
+      cityId: '', // 城市id
       cityName: '', // 城市名称
       provinceId: '', // 省份id
       provinceName: '', // 省份名称
@@ -97,7 +97,7 @@ export default {
   },
   // 生命周期
   async mounted() {
-    
+
   },
   watch: {
     activityInfo(newVal, oldVal) {
@@ -106,6 +106,7 @@ export default {
         this.addOrderUrl = GROUPBUY_ADD_TEAM;
       } else {
         //  false: 参与拼团
+        // this.teamId = newVal.teamId;
         this.addOrderUrl = GROUPBUY_ADD_ORDER;
       }
     }
@@ -173,8 +174,14 @@ export default {
         this.dealerActionSheetShow = false; // 经销商弹窗
         this.areaCodeOld = ''; // 旧的省市code
         this.initArea = true; // 初始化地址信息
+        Toast.loading({
+          message: '加载中...',
+          forbidClick: true,
+          duration: 0,
+        });
+        await this.getProvinceList(); // 获取省信息
+        Toast.clear();
       }
-      await this.getProvinceList(); // 获取省信息
       this.$refs.addressPopup.showState = state;
     },
     // 打开区域
@@ -198,6 +205,7 @@ export default {
       this.areaActionSheetShow = false;
       this.dealerName = '';
       this.dealerId = '';
+      console.log(this.cityId, this.cityName, this.provinceId, this.provinceName);
     },
 
     // 区域弹窗取消
@@ -221,7 +229,7 @@ export default {
 
     // 获取区域经销商信息
     async getDealerLis() {
-      await this.$axios.post(GROUPBUY_SHOP_DEALER, { factory: this.activityInfo.factory ,cityId: this.cityId, carSeriesId: this.activityInfo.carSeriesId }).then(res => {
+      await this.$axios.post(GROUPBUY_DEALER, { id: this.activityInfo.id, provinceName: this.provinceName, cityName: this.cityName}).then(res => {
         if (res.code == 0) {
           this.dealerColumns = [{values: res.data}];
         } else {
@@ -259,7 +267,7 @@ export default {
         provinceId: this.provinceId, // 省份id
         provinceName: this.provinceName, // 省份名称
         price: this.activityInfo.price, // 订金
-        target: this.activityInfo.id, // 拼团/砍价id
+        target: this.activityInfo.type ? this.activityInfo.id : this.activityInfo.teamId, // 拼团/砍价id
         carSeriesId: this.activityInfo.carSeriesId, // 车系id
         carModelId: this.activityInfo.carModelId, // 车型id
         factory: this.activityInfo.factory, // 1小康，2风光

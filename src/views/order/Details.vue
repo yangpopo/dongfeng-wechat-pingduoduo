@@ -1,9 +1,6 @@
 <template>
   <div class="order-details" v-if="order.id">
     <Navigation @return-emit="returnEmit">
-      <template v-slot:title>
-        订单详情
-      </template>
     </Navigation>
     <div class="order">
       <div class="cover-box">
@@ -42,10 +39,43 @@
       <li>下单时间：{{ (order.ct / 1000) | formatDate('yyyy-MM-dd hh:mm:ss') }}</li>
       <li v-if="order.status == 4" class="write-code">核销码：{{ order.orderNo }}</li>
     </ul>
-
-    <div class="common but" v-if="order.teamStatus == 0" @click="goShare" >去分享</div>
-    <div class="common but" v-if="order.status == 0" @click="goPay" >去支付</div>
-    <div class="grey but" v-else-if="order.status == 1" @click="openRefundPopup">申请退款</div>
+    <template v-if="order.type == 1">
+      <!-- 砍价 -->
+      <!-- -1已失效,0待支付，1已支付，2发起退款，3已退款，4已核销,5退款失败 -->
+      <!-- 已失效 -->
+      <div class="grey but" v-if="order.status == -1">已失效</div>
+      <!-- 待支付 -->
+      <div class="common but" v-if="order.status == 0" @click="goPay">去支付</div>
+      <!-- 已支付 -->
+      <div class="grey but" v-if="order.status == 1" @click="openRefundPopup">申请退款</div>
+      <!-- 发起退款 -->
+      <div class="grey but" v-if="order.status == 2">已发起退款</div>
+      <!-- 已退款 -->
+      <div class="grey but" v-if="order.status == 3">已退款</div>
+      <!-- 已核销 -->
+      <div class="grey but" v-if="order.status == 4">已核销</div>
+      <!-- 退款失败 -->
+      <div class="grey but" v-if="order.status == 5">退款失败</div>
+    </template>
+    <template v-if="order.type == 2">
+      <!-- 拼团 -->
+      <template v-if="order.teamStatus == 0">
+        <!-- 拼团中 -->
+        <div class="common but" v-if="order.teamStatus == 0" @click="goShare" >去分享</div>
+        <div class="common but" v-if="order.status == 0" @click="goPay" >去支付</div>
+        <div class="grey but" v-else-if="order.status == 1" @click="openRefundPopup">申请退款</div>
+      </template>
+      <template v-else-if="order.teamStatus == 1">
+        <!-- 拼团成功 -->
+        <div class="grey but" v-if="order.status == 1" @click="openRefundPopup">申请退款</div>
+      </template>
+      <template v-else-if="order.teamStatus == 2">
+        <!-- 拼团失败 -->
+        <div class="grey but" v-if="order.status == 1">拼团失败,已自动退款</div>
+      </template>
+    </template>
+    
+    
 
     <!-- 支付 -->
     <pay-type ref="payType" :payInfo="payInfo" :jump-link="payJumpLink" />
@@ -120,7 +150,7 @@ export default {
     },
     // 返回
     returnEmit() {
-      this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type} });
+      this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
       // if () {
       //   // 从支付结果页面来
       //   this.$router.push({ path: "/order/"});
@@ -131,7 +161,7 @@ export default {
     },
     // 去分享
     goShare() {
-      this.$router.push({ path: "/collage/my-collage", query:{ teamId: this.order.target, token: this.token, type: this.type} });
+      this.$router.push({ path: "/collage/my-collage", query:{ teamId: this.order.target, token: this.token, type: this.type, ifJoin: 1} });
     },
     // 去支付
     goPay() {
@@ -165,6 +195,7 @@ export default {
       this.$axios.post(ORDER_REFUND, {orderId: this.orderId, remark: this.remark}).then(res => {
         if (res.code == 0) {
           Toast.success('退款成功');
+          this.returnEmit();
         } else {
           Toast(res.msg);
         }
@@ -183,7 +214,7 @@ export default {
   box-sizing: border-box;
   padding: 3vw;
   position: relative;
-  padding-top: 14vw;
+  // padding-top: 14vw;
   .order {
     width: 100%;
     background-color: #fafafa;
