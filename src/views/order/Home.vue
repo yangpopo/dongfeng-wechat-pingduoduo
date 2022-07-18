@@ -120,8 +120,9 @@ export default {
         // app关闭窗口  
         appApi.closePage();
       } else {
-        // 微信关闭窗口
-        wx.miniProgram.navigateBack();
+        wx.miniProgram.switchTab({ url: '/pages/my/index' }); // 跳个人中心
+        // wx.miniProgram.navigateBack(); // 微信关闭窗口
+        console.log("微信关闭窗口");
       }
     },
     // 切换菜单

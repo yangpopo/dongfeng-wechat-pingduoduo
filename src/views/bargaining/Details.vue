@@ -8,7 +8,7 @@
     
     <div class="describe-box">
       <div class="cover-box">
-        <img :src="activityInfo.images[0]" alt="">
+        <img :src="activityInfo.images[0].type == 'images' ? activityInfo.images[0].imagesUrl : activityInfo.images[0].videoUrl + '?vframe/jpg/offset/4'" alt="">
       </div>
       <ul class="info-box">
         <li class="title">{{ activityInfo.name }}</li>
@@ -46,7 +46,6 @@
         </template>
         <template v-else-if="selfFlag == 0">
           <!-- selfFlag 0:不是自己 -->
-          <div @click="initiateMyBargaining" class="my-link-but share-big-but">发起我的砍价</div>
           <template v-if="bargainFlag == 0">
             <!-- 没有砍过 -- 该砍价已经完成就不显示 -->
             <div v-if="price.surplus != 0" @click="helpBargaining" class="friend-link-but share-big-but">帮好友砍一刀</div>
@@ -55,6 +54,7 @@
             <!-- 砍过 -->
             <div class="bargaining-complete">您已成功帮好友砍价</div>
           </template>
+          <div @click="initiateMyBargaining" class="my-link-but share-big-but">发起我的砍价</div>
         </template>
       </template>
       <template v-else>
@@ -65,22 +65,24 @@
     <div v-if="stockFlag == 1" class="none-but share-big-but">商品抢光了</div>
 
     <!-- 好友助力 -->
-    <div class="friend-box" v-if="isMy">
+    <div class="friend-box">
       <div class="title">好友助力</div>
       <div class="friend-list">
         <template v-if="bargainList.length != 0">
-          <div class="unit" v-for="item in bargainList" :key="item.id">
-            <div class="head">
-              <div class="head-portrait">
-                <img :src="item.headImg" alt="">
+          <template v-for="item in bargainList" >
+            <div class="unit" :key="item.id" v-if=" isMy ? true : item.cid == cid">
+              <div class="head">
+                <div class="head-portrait">
+                  <img :src="item.headImg" alt="">
+                </div>
+                <dl>
+                  <dt>{{ item.cname }}</dt>
+                  <dd>{{ (item.bargainTime / 1000) | formatDate('yyyy/MM/dd hh:mm:ss') }}</dd>
+                </dl>
               </div>
-              <dl>
-                <dt>{{ item.cname }}</dt>
-                <dd>{{ (item.bargainTime / 1000) | formatDate('yyyy/MM/dd hh:mm:ss') }}</dd>
-              </dl>
-            </div>
-            <div class="footer">砍掉：{{ item.price | priceUnit }}元</div>
+              <div class="footer">砍掉：{{ item.price | priceUnit }}元</div>
           </div>
+          </template>
         </template>
         <van-empty v-else description="暂无好友助力" />
       </div>
@@ -91,7 +93,7 @@
       <div class="share-img-box">
         <div class="share-img" ref="shareImg">
           <div class="cover-box">
-            <img :src="activityInfo.images[0]" alt="">
+            <img :src="activityInfo.images[0].type == 'images' ? activityInfo.images[0].imagesUrl : activityInfo.images[0].videoUrl + '?vframe/jpg/offset/4'" alt="">
           </div>
           <dl class="info-box">
             <dt>{{ activityInfo.name }}</dt>
@@ -187,6 +189,7 @@ export default {
       payJumpLink: '', // 支付跳转链接
       payInfo: {}, // 支付信息
       isMy: false, // false:不是自己发起的砍价 true: 自己发起的砍价
+      cid: -1, // 当前登录用户的id
     }
   },
 
@@ -236,10 +239,9 @@ export default {
       this.$axios.post(BARGAIN_CUSTOMER_BARGAIN_INFO, {customerBargainId: this.customerBargainId, orderNo: this.orderNo}).then(res => {
         Toast.clear();
         if (res.code == 0) {
-          // 数据处理
-          if (res.data.activityInfo.images != null) {
-            res.data.activityInfo.images = res.data.activityInfo.images.split(",");
-          } else {
+          try {
+            res.data.activityInfo.images = JSON.parse(res.data.activityInfo.images);
+          } catch (error) {
             res.data.activityInfo.images = [];
           }
           this.bargainingDownTime = res.data.customerBargainInfo.endTime - this.currentTime;
@@ -254,6 +256,7 @@ export default {
           this.selfFlag = res.data.selfFlag;
           this.isMy = res.data.isMy;
           this.customerBargainInfo = res.data.customerBargainInfo; // 砍价信息
+          this.cid = res.data.customerId; // 当前用户的id
         } else {
           Toast(res.mes);
         }

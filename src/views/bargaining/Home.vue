@@ -3,7 +3,10 @@
     <Navigation @return-emit="returnEmit">
     </Navigation>
     <swiper class="swiper-box" ref="mySwiper" :options="swiperOptions" v-if="bargainingInfo.images.length > 0">
-      <swiper-slide class="slide-box" v-for="imgItem in bargainingInfo.images" :key="imgItem"><img class="img-slide" :src="imgItem" alt="" /></swiper-slide>
+      <swiper-slide class="slide-box" v-for="(imgItem, index) in bargainingInfo.images" :key="imgItem + index">
+        <img v-if="imgItem.type == 'images'" class="img-slide" :src="imgItem.imagesUrl" alt="" />
+        <video v-if="imgItem.type == 'video'" :src="imgItem.videoUrl" :poster="imgItem.videoUrl + '?vframe/jpg/offset/4'" controls class="video-slide" x5-video-player-type="h5-page" x5-video-orientation="landscape|portrait" webkit-playsinline="true" playsinline="true"></video>
+      </swiper-slide>
       <div class="swiper-pagination" slot="pagination"></div>
     </swiper>
     <div class="price-info">
@@ -132,8 +135,9 @@ export default {
         // app关闭窗口  
         appApi.closePage();
       } else {
-        // 微信关闭窗口
-        wx.miniProgram.navigateBack();
+        wx.miniProgram.switchTab({ url: '/pages/my/index' }); // 跳个人中心
+        // wx.miniProgram.navigateBack(); // 微信关闭窗口
+        console.log("微信关闭窗口");
       }
     },
     // 获取
@@ -148,10 +152,9 @@ export default {
       }).then((res) => {
         Toast.clear();
         if (res.code == 0) {
-          // 数据处理
-          if (res.data.images != null) {
-            res.data.images = res.data.images.split(",");
-          } else {
+          try {
+            res.data.images = JSON.parse(res.data.images);
+          } catch (error) {
             res.data.images = [];
           }
           this.activityDownTime = res.data.endTime - this.currentTime;
@@ -221,6 +224,8 @@ export default {
     height: 80vw;
     .slide-box {
       position: relative;
+      overflow: hidden;
+      background-color: #000;
       .img-slide {
         position: absolute;
         top: 50%;
@@ -229,6 +234,15 @@ export default {
         width:auto;
         min-width: 100%;
         height: 100%;
+      }
+      .video-slide{
+        position: absolute;
+        top: 52.8%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 84%;
+        background-color: #000;
       }
     }
   }
