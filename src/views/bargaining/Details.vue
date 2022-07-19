@@ -268,10 +268,10 @@ export default {
       console.log(path);
       wx.miniProgram.postMessage({
         data: {
-          type: 'share_data',     //固定
+          type: 'share_data', //固定
           data: {
-            title: this.activityInfo.name,      //分享标题，可选，不传使用小程序名
-            imageUrl: this.activityInfo.images[0],   //分享图片，可选，不传使用默认图
+            title: this.activityInfo.name, //分享标题，可选，不传使用小程序名
+            imageUrl: this.activityInfo.images[0],  //分享图片，可选，不传使用默认图
             path, //小程序页面地址，可选
           },
         },

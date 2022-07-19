@@ -50,7 +50,8 @@
         <template>
           <!-- ifJoin 0:没有参加 1:参加了 -->
           <div v-if="ifJoin == 0" class="common-but" style="margin-bottom: 3vw;" @click="goJoinCollage">立即参团</div>
-          <div class="common-but" @click="conveneMyCollage">发起我的拼团</div>
+          <!-- isMyTeam true:是自己的发起的团 就不能在发起拼团了 -->
+          <div class="common-but" v-if="!model.isMyTeam" @click="conveneMyCollage">发起我的拼团</div>
         </template>
       </template>
       <div v-else class="common-but" style="margin-bottom: 3vw;" @click="returnEmit">返回首页</div>

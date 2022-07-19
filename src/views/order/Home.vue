@@ -184,7 +184,11 @@ export default {
           }
           res.data.data.forEach(item => {
             if (item.detailImg != null) {
-              item.detailImg = item.detailImg.split(",");
+              if (this.menuIndex == 1) {
+                item.detailImg = JSON.parse(item.detailImg);
+              } else if (this.menuIndex == 2) {
+                item.detailImg = item.detailImg.split(",");
+              }
             } else {
               item.detailImg = [];
             }

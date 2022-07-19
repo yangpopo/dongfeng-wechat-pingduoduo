@@ -41,7 +41,7 @@
           </div>
           <div class="footer">
             还差<b>{{ group.num }}人</b>成团
-            <div class="join-but" @click="goJoinCollage(group.customers[0].groupId, group.customers[0].teamId)">去参团</div>
+            <div class="join-but" @click="goJoinCollage(group.customers[0].groupId, group.customers[0].teamId, group.isMyTeam)">去参团</div>
           </div>
         </div>
       </div>
@@ -191,7 +191,11 @@ export default {
     },
 
     // 参加别人的拼团
-    goJoinCollage(groupId, teamId) {
+    goJoinCollage(groupId, teamId, isMyTeam) {
+      if (isMyTeam) {
+        Toast('这是你自己的团,不能加入!');
+        return
+      }
       this.activityInfo = {
         type: false,
         id: groupId,

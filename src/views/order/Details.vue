@@ -4,7 +4,8 @@
     </Navigation>
     <div class="order">
       <div class="cover-box">
-        <img :src="order.detailImg[0]" alt />
+        <img v-if="order.type == 1" :src="order.detailImg[0].type == 'images' ? order.detailImg[0].imagesUrl : order.detailImg[0].videoUrl + '?vframe/jpg/offset/4'" alt />
+        <img v-if="order.type == 2" :src="order.detailImg[0]" alt />
       </div>
       <dl class="info">
         <dt class="title">{{ order.orderName }}</dt>
@@ -137,7 +138,13 @@ export default {
       this.$axios.post(ORDER_QUERY_ONE, {orderId: this.orderId}).then(res => {
         if (res.code == 0) {
           if(res.data.detailImg != null) {
-            res.data.detailImg = res.data.detailImg.split(",");
+            if (res.data.type == 1) {
+              // 砍价
+              res.data.detailImg = JSON.parse(res.data.detailImg);
+            } else if (res.data.type == 2) {
+              // 拼团
+              res.data.detailImg = res.data.detailImg.split(",");
+            }
           } else {
             res.data.detailImg = [];
           }

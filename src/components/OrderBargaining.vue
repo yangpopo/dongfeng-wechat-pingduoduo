@@ -1,7 +1,7 @@
 <template>
   <div class="order-bargaining" @click="goOrderDetails">
     <div class="cover-box">
-      <img :src="OrderInfo.detailImg[0]" alt="">
+      <img :src="OrderInfo.detailImg[0].type == 'images' ? OrderInfo.detailImg[0].imagesUrl : OrderInfo.detailImg[0].videoUrl + '?vframe/jpg/offset/4'" alt="">
     </div>
     <dl class="info">
       <dt class="title">{{ OrderInfo.orderName }}</dt>
