@@ -34,7 +34,10 @@
     </div>
     <van-progress class="progress-box" :show-pivot="false" track-color="#FFF4C4" color="#FA2626" :percentage="price.success / (price.surplus + price.success) * 100" stroke-width="8" />
     <!-- 砍价成功 -->
-    <div v-if="(price.surplus == 0) && (activityEndTime >= currentTime) && (selfFlag == 1)" class="my-link-but share-big-but" @click="payDeposit">立即下订</div>
+    <!-- selfFlag: 1, // 1表示自己，0，表示不是自己 未支付 -->
+    <template v-if="(price.surplus == 0) && (activityEndTime >= currentTime) && (selfFlag == 1)">
+      <div v-if="orderInfo.status == 0" class="my-link-but share-big-but" @click="payDeposit">立即下订</div>
+    </template>
     <template v-else-if="stockFlag == 0">
       <!-- 商品没抢完 -->
       <template v-if="bargainEndTime >= currentTime">
@@ -81,7 +84,7 @@
                 </dl>
               </div>
               <div class="footer">砍掉：{{ item.price | priceUnit }}元</div>
-          </div>
+            </div>
           </template>
         </template>
         <van-empty v-else description="暂无好友助力" />
@@ -330,14 +333,16 @@ export default {
 
     // 下订金按钮
     payDeposit() {
+      // 订单信息 用活动id覆盖订单id
       this.orderInfo = {
         type: true,
         titleData: '订单确认',
-        id: this.orderInfo.id, // 订单id
+        id: this.activityInfo.id, // 活动id
         price: this.activityInfo.deposit, // 定金
         butData: '提交并支付',
         factory: this.orderInfo.factory, // 1小康，2风光
         orderName: this.orderInfo.orderName, // 活动名称
+        orderId: this.orderInfo.id, // 订单id
       }
       console.log(this.activityInfo.deposit)
       this.$refs.orderInfo.showState(true);

@@ -67,13 +67,14 @@ export default {
         return {
           type: false, // false: 填写信息 true: 确认信息
           titleData: '填写信息',
-          id: '',
+          id: '', // 活动id
           price: '', // 定金
           butData: '提交', // 按钮样式
           carSeriesId: -1, // 车系id
           carModelId: -1, // 车型id
           factory: 1, // 1小康，2风光
           orderName: null, // 活动名称
+          orderId: 0, // 订单id
         }
       }
     },
@@ -126,7 +127,7 @@ export default {
     },
     // 获取订单信息
     async getOrderInfo() {
-      await this.$axios.post(BARGAIN_ORDER_INFO, {orderId: this.activityInfo.id}).then(res => {
+      await this.$axios.post(BARGAIN_ORDER_INFO, {orderId: this.activityInfo.orderId}).then(res => {
         if (res.code == 0) {
           this.userName = res.data.userName; // 姓名
           this.phone = res.data.phone; // 电话
@@ -141,7 +142,6 @@ export default {
           this.orderNo = res.data.orderNo; // 订单编号
           // this.activityId = res.data.activityId; // 砍价id
           this.target = res.data.target; // 用户砍价id
-          console.log("54455445454", res.data.userName)
         } else {
           Toast(res.mes);
         }
@@ -210,18 +210,24 @@ export default {
           forbidClick: true,
           duration: 0,
         });
-        await this.getProvinceList(); // 获取省信息
         Toast.clear();
       }
-      
+      await this.getProvinceList(); // 获取省信息
       this.$refs.addressPopup.showState = state;
     },
     // 打开区域
-    openArea() {
+   async openArea() {
       this.areaActionSheetShow = true;
       if (this.initArea == true) {
         this.$nextTick(async () => {
-          let cityList = await this.getCityList(this.areaColumns[0].values[0].addressCode);
+          let provinceId = '';
+          try {
+            provinceId = this.areaColumns[0].values[0].addressCode;
+          } catch (error) {
+            provinceId = this.provinceId;
+          }
+          console.log(provinceId, "-*---")
+          let cityList = await this.getCityList(provinceId);
           this.$refs.areaPicker.setColumnValues(1, cityList);
           this.initArea = false;
         })
@@ -235,6 +241,8 @@ export default {
       this.provinceId = value[0].provinceId, // 省份id
       this.provinceName = value[0].name; // 省份名称
       this.areaActionSheetShow = false;
+      this.dealerName = ''; // 经销商名称
+      this.dealerId =''; // 经销商id
     },
 
     // 区域弹窗取消

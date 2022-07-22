@@ -46,8 +46,17 @@
         <div class="text-but ed">活动结束</div>
       </template>
       <template v-else>
-        <div class="text-but ing" v-if="bargainingInfo.flag == 0" @click="startBargaining">发起砍价</div>
-        <div class="text-but ing" v-else-if="bargainingInfo.flag == 1" @click="continueBargaining">继续砍价</div>
+        <template v-if="bargainingInfo.appOrderEntity != null">
+          <div v-if="bargainingInfo.appOrderEntity.status == 1" class="text-but ing" @click="myOrderDetails">砍价成功去查看</div>
+          <template v-else>
+            <div class="text-but ing" v-if="bargainingInfo.flag == 0" @click="startBargaining">发起砍价</div>
+            <div class="text-but ing" v-else-if="bargainingInfo.flag == 1" @click="continueBargaining">继续砍价</div>
+          </template>
+        </template>
+        <template v-else>
+          <div class="text-but ing" v-if="bargainingInfo.flag == 0" @click="startBargaining">发起砍价</div>
+          <div class="text-but ing" v-else-if="bargainingInfo.flag == 1" @click="continueBargaining">继续砍价</div>
+        </template>
       </template>
     </div>
 
@@ -203,6 +212,12 @@ export default {
     // 我的订单
     myOrder() {
       this.$router.push({ path: "/order", query:{ menuIndex: 1, token: this.token, type: this.type} });
+    },
+
+    // 订单详情
+    myOrderDetails() {
+      // http://10.26.4.33:8080/#/order/order-details?orderId=333&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ7XCJpZFwiOjEwMjAyOTQsXCJtb2JpbGVcIjpcIjE4NzE2MzY0Mzg0XCIsXCJvcGVuaWRcIjpcIm8wZlRPNVUyZkYzSlQ3aURyc0xTY3RNQnA0TVFcIixcInJvdW5kU3RyXCI6XCIxNjU4MjgxNTcyMjU5XCJ9In0.i9pazXCIECqN0FdwOg69Z10T5xe3uy0XZzgQ-ZAlcbc&type
+      this.$router.push({ path: "/order/order-details", query:{ orderId: this.bargainingInfo.appOrderEntity.id, token: this.token, type: this.type} });
     },
 
     // 跳转客服
