@@ -8,7 +8,7 @@
     </swiper>
     <div class="price-info">
       <dl class="price">
-        <dt>定金<b>{{ model.price | priceUnit }}</b>元</dt>
+        <dt>订金<b>{{ model.price | priceUnit }}</b>元</dt>
       </dl>
       <span class="right-box">{{ model.groupNum }}人成团&nbsp;&nbsp;已拼:{{ model.successNum }}人</span>
     </div>
@@ -46,16 +46,15 @@
         </div>
       </div>
       <template v-if="model.joinTeam[0].num != 0">
-        <div class="common-but" style="margin-bottom: 3vw;" @click="shareWeChatAppBut">邀请好友参加拼团</div>
         <template>
           <!-- ifJoin 0:没有参加 1:参加了 -->
           <div v-if="ifJoin == 0" class="common-but" style="margin-bottom: 3vw;" @click="goJoinCollage">立即参团</div>
           <!-- isMyTeam true:是自己的发起的团 就不能在发起拼团了 -->
-          <div class="common-but" v-if="!model.isMyTeam" @click="conveneMyCollage">发起我的拼团</div>
+          <div class="common-but" style="margin-bottom: 3vw;" v-if="!model.isMyTeam" @click="conveneMyCollage">发起我的拼团</div>
         </template>
+        <div class="common-but" style="margin-bottom: 3vw;" @click="shareWeChatAppBut">邀请好友参加拼团</div>
       </template>
-      <div v-else class="common-but" style="margin-bottom: 3vw;" @click="returnEmit">返回首页</div>
-      
+      <div v-else class="common-but" style="margin-bottom: 3vw;" @click="returnHome">返回首页</div>
     </template>
     <div v-else class="collage-end">拼团活动已结束</div>
     
@@ -63,7 +62,7 @@
     <order-info-collage :activityInfo="activityInfo" ref="orderInfo" @address-submit="goPay" />
 
     <!-- 支付 -->
-    <pay-type ref="payType" :jump-link="payJumpLink" />
+    <pay-type ref="payType" :pay-info="payInfo" :jump-link="payJumpLink" />
 
     <!-- 分享弹窗 -->
     <mask-box ref="shareLinkPopup" @mask-event="shareLinkPopupEvent">
@@ -151,6 +150,7 @@ export default {
           console.log(res.data.model.detailImg);
           this.model = res.data.model;
           this.groupList = res.data.groupList;
+          this.ifJoin = res.data.model.ifJoin; // 是否是自己
         } else {
           Toast(res.mes);
         }
@@ -190,6 +190,11 @@ export default {
     },
     // 返回
     returnEmit() {
+      this.$router.go(-1);
+      // this.$router.push({ path: "/collage",  query:{ token: this.token, type: this.type, id: this.id, menuIndex: 1} });
+    },
+    // 返回首页
+    returnHome() {
       this.$router.push({ path: "/collage",  query:{ token: this.token, type: this.type, id: this.id, menuIndex: 1} });
     },
     // 小程序分享

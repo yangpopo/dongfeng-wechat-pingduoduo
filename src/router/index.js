@@ -51,6 +51,12 @@ const routes = [
         component: () => import(/* webpackChunkName: "MyCollage" */ '../views/collage/MyCollage.vue'),
       },
       {
+        path: 'my-collage-details',
+        name: 'MyCollageDetails',
+        meta:{title:"我的拼团"},
+        component: () => import(/* webpackChunkName: "MyCollageDetails" */ '../views/collage/MyCollageDetails.vue'),
+      },
+      {
         path: 'pay-result',
         name: 'CollagePayResult',
         meta:{title:"支付"},

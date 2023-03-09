@@ -230,7 +230,8 @@ export default {
   // 事件
   methods:{
     returnEmit() {
-      this.$router.push({ path: "/bargaining",  query:{ token: this.token, type: this.type, id: this.activityInfo.id} });
+      this.$router.go(-1);
+      // this.$router.push({ path: "/bargaining",  query:{ token: this.token, type: this.type, id: this.activityInfo.id} });
     },
     // 获取砍价详情
     getDetails() {
@@ -291,7 +292,7 @@ export default {
     shareImgBut() {
       this.$refs.shareImgPopup.showState = true;
       let path = process.env.VUE_APP_SERVER_URL + "#/bargaining/bargaining-betails?customerBargainId=" + this.customerBargainId;
-      let QRCodePath = `https://fgej76file.itqiche.com/minicode/pages/webpage/index?url=${encodeURIComponent(path)}`; // 打开小程序链接
+      let QRCodePath = `https://fgejfile.dfsk.com.cn/minicode/pages/webpage/index?url=${encodeURIComponent(path)}`; // 打开小程序链接
       console.log("path:", path);
       console.log("QRCodePath:", QRCodePath);
       this.$nextTick(() => {
@@ -338,7 +339,7 @@ export default {
         type: true,
         titleData: '订单确认',
         id: this.activityInfo.id, // 活动id
-        price: this.activityInfo.deposit, // 定金
+        price: this.activityInfo.deposit, // 订金
         butData: '提交并支付',
         factory: this.orderInfo.factory, // 1小康，2风光
         orderName: this.orderInfo.orderName, // 活动名称

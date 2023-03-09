@@ -11,7 +11,7 @@
     </swiper>
     <div class="price-info">
       <dl class="price">
-        <dt>定金<b>{{ bargainingInfo.deposit | priceUnit }}</b>元</dt>
+        <dt>订金<b>{{ bargainingInfo.deposit | priceUnit }}</b>元</dt>
         <dd><span class="price-01">砍价后：{{ bargainingInfo.targetPrice | priceUnit }}元</span><span class="price-02">原价：{{ bargainingInfo.price | priceUnit }}元</span></dd>
       </dl>
       <span class="right-box"><van-count-down :time="activityDownTime" />后结束</span>
@@ -144,9 +144,10 @@ export default {
         // app关闭窗口  
         appApi.closePage();
       } else {
-        wx.miniProgram.switchTab({ url: '/pages/my/index' }); // 跳个人中心
-        // wx.miniProgram.navigateBack(); // 微信关闭窗口
-        console.log("微信关闭窗口");
+        this.$router.go(-1);
+        // wx.miniProgram.switchTab({ url: '/pages/my/index' }); // 跳个人中心
+        // // wx.miniProgram.navigateBack(); // 微信关闭窗口
+        // console.log("微信关闭窗口");
       }
     },
     // 获取

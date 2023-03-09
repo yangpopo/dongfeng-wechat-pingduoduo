@@ -5,7 +5,7 @@
       <img class="payment-icon" src="../../assets/img/payment-success.png" alt="">
       <dl class="explain">
         <dt>支付成功</dt>
-        <dd>您可凭身份证明和订单记录<br />到经销商门店支付尾款</dd>
+        <!-- <dd>您可凭身份证明和订单记录<br />到经销商门店支付尾款</dd> -->
       </dl>
       <div class="pay-but" @click="returnPage">返回</div>
     </div>
@@ -54,7 +54,8 @@ export default {
   methods:{
     // 返回页面
     returnPage() {
-      this.$router.push({ path: "/collage/my-collage", query:{ id: this.id, teamId: this.teamId, token: this.token, type: this.type } });
+      // this.$router.push({ path: "/collage/my-collage", query:{ id: this.id, teamId: this.teamId, token: this.token, type: this.type } });
+      this.$router.push({ path: "/order", query:{ menuIndex: 2, token: this.token, type: this.type} });
       // this.$router.go(-1);
     },
 

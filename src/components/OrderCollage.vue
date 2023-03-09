@@ -6,6 +6,8 @@
     <dl class="info">
       <dt class="title">{{ OrderInfo.orderName }}</dt>
       <dd class="dd-01">订金：{{ OrderInfo.price | priceUnit }}元</dd>
+      <!-- 拼团成功 -->
+      <dd class="dd-01" v-if="OrderInfo.teamStatus == 1">核销码：{{ OrderInfo.verifyCode }}</dd>
       <dd class="dd-02">
         <span class="tap-01">
           <template v-if="OrderInfo.teamStatus == 0">

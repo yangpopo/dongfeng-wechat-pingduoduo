@@ -16,9 +16,14 @@ function getUrlParam(name) {
 let token = getUrlParam('token');
 let type = getUrlParam('type'); // app: 来自app  null: 来自小程序
 
+let lat = getUrlParam('lat') || ''; // 纬度
+let lng = getUrlParam('lng') || ''; // 经度
+
 // 存储vuex
 store.commit('updateToken', token);
 store.commit('updateType', type);
+store.commit('updateLat', lat);
+store.commit('updateLng', lng);
 
 let baseURL = "";
 if(type == "app") {

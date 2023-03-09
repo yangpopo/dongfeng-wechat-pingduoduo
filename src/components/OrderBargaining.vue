@@ -6,6 +6,7 @@
     <dl class="info">
       <dt class="title">{{ OrderInfo.orderName }}</dt>
       <dd class="dd-01">订金：{{ OrderInfo.price | priceUnit }}元</dd>
+      <dd class="dd-01" v-if="(OrderInfo.status == 1) || (OrderInfo.status == 4)">核销码：{{ OrderInfo.verifyCode }}</dd>
       <dd class="dd-02">
         <span class="tap-01">砍后价：{{ OrderInfo.totalPrice / 100 / 10000 }}万元</span>
         <span class="tap-02" v-if="OrderInfo.status == -1">已失效</span>

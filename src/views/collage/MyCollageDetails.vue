@@ -24,25 +24,38 @@
     <div class="explain-box">
       <div class="partake-box" v-if="groupList.length != 0">
         <div class="look-out">
-          {{ groupList.length }}人正在发起拼团，点击参团可直接参与
+          <template v-if="currentTime >= model.endTime">拼团活动结束</template>
+          <template v-else-if="model.successNum >= model.groupNum">
+            拼团成功
+          </template>
+          <template v-else>
+            <template v-if="model.status == 1">
+              拼团进行中
+            </template>
+            <template v-else-if="model.status == 2">
+              拼团失败
+            </template>
+          </template>
         </div>
-        <div class="partake-unit" v-for="group in groupList" :key="group.teamId">
+        <div class="partake-unit">
           <div class="head">
             <ul>
-              <template v-for="(item, index) in group.customers">
+              <template v-for="(item, index) in groupList.customers">
                 <li v-if="index < 5" :key="item.cid"><img :src="item.headImg" alt=""></li>
               </template>
             </ul>
-            <template v-if="group.customers.length > 1">
-              <span class="name">{{ group.customers[0].nickName }}</span>等
+            <template v-if="groupList.customers.length > 1">
+              <span class="name">{{ groupList.firstName }}</span>等
             </template>
             <template v-else>
-              <span class="name">{{ group.customers[0].nickName }}</span>
+              <span class="name">{{ groupList.firstName }}</span>
             </template>
           </div>
           <div class="footer">
-            还差<b>{{ group.num }}人</b>成团
-            <div class="join-but" @click="goJoinCollage(group.customers[0].groupId, group.customers[0].teamId, group.isMyTeam, group.ifJoin)">去参团</div>
+            还差<b>{{ groupList.num }}人</b>成团
+             <template v-if="(currentTime < model.endTime) && (model.successNum < model.groupNum) && (model.status == 1)">
+               <div class="join-but" v-if="(model.isMyTeam != true) && (model.ifJoin != 1)" @click="goJoinCollage(model.id, groupList.teamId, model.isMyTeam, model.ifJoin)">去参团</div>
+             </template>
           </div>
         </div>
       </div>
@@ -66,7 +79,12 @@
         </div>
       </div>
       <template v-if="currentTime <= model.endTime">
-        <div class="text-but ing" @click="goCreateCollage">发起拼团</div>
+        <div v-if="model.successNum >= model.groupNum" class="text-but ed">拼团成功</div>
+        <template v-else-if="model.status == 1">
+          <div v-if="model.isMyTeam == true || model.ifJoin == 1" class="text-but ing" @click="shareWeChatAppBut">邀请好友来拼团</div>
+          <div v-else class="text-but ing" @click="goCreateCollage">发起拼团</div>
+        </template>
+        <div v-else class="text-but ed">拼团失败</div>
         <!-- <div class="text-but ing" v-if="model.ifJoin != 1" @click="goCreateCollage">发起拼团</div>
         <div class="text-but ing" @click="goMyCollage" v-else>继续拼团</div> -->
       </template>
@@ -78,6 +96,11 @@
 
     <!-- 支付 -->
     <pay-type ref="payType" :pay-info="payInfo" :jump-link="payJumpLink" />
+
+    <!-- 分享弹窗 -->
+    <mask-box ref="shareLinkPopup" @mask-event="shareLinkPopupEvent">
+      <img class="share-lick-icon" src="../../assets/img/bargaining/share-icon.png" alt="">
+    </mask-box>
     
   </div>
 </template>
@@ -133,7 +156,7 @@ export default {
 
   // 生命周期
   mounted() {
-    this.id = this.$route.query.id;
+    this.id = this.$route.query.teamId;
     this.getGroupBuyInfo();
   },
 
@@ -163,7 +186,7 @@ export default {
         forbidClick: true,
         duration: 0,
       });
-      this.$axios.post(GROUPBUY_QUERY_ONE, {id: this.id}).then(res => {
+      this.$axios.post(GROUPBUY_QUERY_ONE, {teamId: this.id}).then(res => {
         Toast.clear();
         if (res.code == 0) {
           if (res.data.model.detailImg != null) {
@@ -172,7 +195,8 @@ export default {
             res.data.model.detailImg = [];
           }
           this.model = res.data.model;
-          this.groupList = res.data.groupList;
+          // 处理拼团人的数据
+          this.groupList = res.data.model.joinTeam[0];
         } else {
           Toast(res.msg);
         }
@@ -262,7 +286,28 @@ export default {
     // 跳转拼团
     goMyCollage() {
       this.$router.push({ path: "/collage/my-collage", query: {teamId: this.model.myTeam.teamId, id: this.model.myTeam.groupId,token: this.token, type: this.type, ifJoin: 1} });
-    }
+    },
+
+    // 小程序分享
+    shareWeChatAppBut() {
+      let path = `/pages/webpage/index?url=${encodeURIComponent(process.env.VUE_APP_SERVER_URL + "#/collage/my-collage?teamId=" + this.teamId)}`;
+      wx.miniProgram.postMessage({
+        data: {
+          type: 'share_data',     //固定
+          data: {
+            title: this.model.title,      //分享标题，可选，不传使用小程序名
+            imageUrl: this.model.detailImg[0],   //分享图片，可选，不传使用默认图
+            path, //小程序页面地址，可选
+          },
+        },
+      });
+      this.$refs.shareLinkPopup.showState = true;
+    },
+
+    // 关闭分享链接弹窗
+    shareLinkPopupEvent() {
+      this.$refs.shareLinkPopup.showState = false;
+    },
   }
 }
 </script>
@@ -512,6 +557,13 @@ export default {
         background-color: #F6F7F9;
       }
     }
+  }
+  .share-lick-icon {
+    position: absolute;
+    width: 55vw;
+    height: 13vw;
+    right: 15vw;
+    top: 3vw;
   }
 }
 </style>

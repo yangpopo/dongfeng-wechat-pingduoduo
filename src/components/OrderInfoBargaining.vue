@@ -51,6 +51,7 @@
 
 <script>
 import MaskBox from "@/components/MaskBox";
+import {gpsDisplaceInfo} from "@/assets/js/public";
 import { Toast, Dialog } from 'vant';
 import { SHOP_PROVINCE, SHOP_CITY, BARGAIN_ADD_ORDER, BARGAIN_PAY, BARGAIN_DEALERLIST, BARGAIN_ORDER_INFO } from "@/request/api";
 
@@ -68,7 +69,7 @@ export default {
           type: false, // false: 填写信息 true: 确认信息
           titleData: '填写信息',
           id: '', // 活动id
-          price: '', // 定金
+          price: '', // 订金
           butData: '提交', // 按钮样式
           carSeriesId: -1, // 车系id
           carModelId: -1, // 车型id
@@ -103,11 +104,13 @@ export default {
       initArea: true, // 初始化地址信息
       // 经销商多级选择
       dealerColumns: [],
+      cityLocateInfo: {}, // 城市信息
+      cityLocateCityList: [], // 城市信息的城市列表
     }
   },
   // 生命周期
-  async mounted() {   
-    
+  async mounted() {
+  
   },
   watch: {
     async activityInfo(newVal, oldVal) {
@@ -213,6 +216,32 @@ export default {
         Toast.clear();
       }
       await this.getProvinceList(); // 获取省信息
+      this.cityLocateInfo = await gpsDisplaceInfo(); // 通过定位获取城市信息
+      if (this.cityLocateInfo != false) {
+        // 匹配省信息
+        for (let i = 0; i < this.areaColumns[0].values.length; i++) {
+          if (this.areaColumns[0].values[i].provinceName.indexOf(this.cityLocateInfo.province.slice(0, 2)) != -1) {
+            this.provinceId = this.areaColumns[0].values[i].provinceId;
+            this.provinceName = this.areaColumns[0].values[i].provinceName;
+            break
+          }
+        }
+        // 获取城市信息
+        this.cityLocateCityList = await this.getCityList(this.provinceId);
+        if (this.cityLocateCityList.length != 1) {
+          for (let j = 0; j < this.cityLocateCityList.length; j++) {
+            if (this.cityLocateCityList[j].cityName.indexOf(this.cityLocateInfo.district.slice(0, 2)) != -1) {
+              this.cityId = this.cityLocateCityList[j].cityCode;
+              this,cityName = this.cityLocateCityList[j].cityName;
+            }
+          }
+        } else {
+          this.cityId = this.cityLocateCityList[0].cityCode;
+          this.cityName = this.cityLocateCityList[0].cityName;
+        }
+        console.log(this.cityLocateInfo, "定位城市信息")
+        console.log(this.cityLocateCityList, "城市信息");
+      }
       this.$refs.addressPopup.showState = state;
     },
     // 打开区域
@@ -226,7 +255,6 @@ export default {
           } catch (error) {
             provinceId = this.provinceId;
           }
-          console.log(provinceId, "-*---")
           let cityList = await this.getCityList(provinceId);
           this.$refs.areaPicker.setColumnValues(1, cityList);
           this.initArea = false;

@@ -7,9 +7,17 @@
         <img v-if="order.type == 1" :src="order.detailImg[0].type == 'images' ? order.detailImg[0].imagesUrl : order.detailImg[0].videoUrl + '?vframe/jpg/offset/4'" alt />
         <img v-if="order.type == 2" :src="order.detailImg[0]" alt />
       </div>
-      <dl class="info">
+      <dl class="info" @click="skipLinkDetails">
         <dt class="title">{{ order.orderName }}</dt>
         <dd class="dd-01">订金：{{ order.price | priceUnit }}元</dd>
+        <template v-if="order.type == 1">
+          <!-- 砍价 -->
+          <dd class="dd-01" v-if="(order.status == 1) || (order.status == 4)">核销码：{{ order.verifyCode }}</dd>
+        </template>
+        <template v-if="order.type == 2">
+          <!-- 拼团 -->
+          <dd class="dd-01" v-if="order.teamStatus == 1">核销码：{{ order.verifyCode }}</dd>
+        </template>
         <dd class="dd-02">
           <span class="tap-01" v-if="order.type == 1">砍后价：{{ order.totalPrice / 100 / 10000 }}万元</span>
           <!-- <span class="tap-02">申请退款</span>
@@ -38,7 +46,7 @@
     <ul class="order-info">
       <li>订单编号：{{ order.orderNo }}</li>
       <li>下单时间：{{ (order.ct / 1000) | formatDate('yyyy-MM-dd hh:mm:ss') }}</li>
-      <li v-if="order.status == 4" class="write-code">核销码：{{ order.orderNo }}</li>
+      <!-- <li v-if="order.status == 4" class="write-code">核销码：{{ order.orderNo }}</li> -->
     </ul>
     <template v-if="order.type == 1">
       <!-- 砍价 -->
@@ -62,7 +70,8 @@
       <!-- 拼团 -->
       <template v-if="order.teamStatus == 0">
         <!-- 拼团中 -->
-        <div class="common but" v-if="order.teamStatus == 0" @click="goShare" >去分享</div>
+        <div class="hollow-out but" v-if="order.status != 3 && order.status != 4" @click="goDetails" >拼团详情</div>
+        <div class="common but" v-if="(order.teamStatus == 0) && (order.status != 2)" @click="goShare" >去分享</div>
         <div class="common but" v-if="order.status == 0" @click="goPay" >去支付</div>
         <div class="grey but" v-else-if="order.status == 1" @click="openRefundPopup">申请退款</div>
       </template>
@@ -72,8 +81,9 @@
       </template>
       <template v-else-if="order.teamStatus == 2">
         <!-- 拼团失败 -->
-        <div class="grey but" v-if="order.status == 1">拼团失败,已自动退款</div>
+        <div class="grey but" v-if="order.status == 1">拼团失败,已自动发起退款申请</div>
       </template>
+      <div class="grey but" v-if="order.status == 3" >已退款</div>
     </template>
     
     
@@ -91,7 +101,6 @@
         <img @click="clostRefundPopup" class="close-but" src="../../assets/img/close-01.png" alt="">
       </div>
     </mask-box>
-
   </div>
 </template>
 
@@ -117,6 +126,7 @@ export default {
       order: {}, // 订单数据
       payInfo: {}, // 支付信息
       payJumpLink: '', // 支付跳转链接
+      errorOperation: false,
     };
   },
 
@@ -157,7 +167,8 @@ export default {
     },
     // 返回
     returnEmit() {
-      this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
+      this.$router.go(-1);
+      // this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
       // if () {
       //   // 从支付结果页面来
       //   this.$router.push({ path: "/order/"});
@@ -199,16 +210,43 @@ export default {
         Toast('退款理由不能少于5个字!');
         return
       }
+      if (this.errorOperation) {
+        Toast('正在提交请稍后!');
+        return
+      }
+      this.errorOperation = true;
       this.$axios.post(ORDER_REFUND, {orderId: this.orderId, remark: this.remark}).then(res => {
         if (res.code == 0) {
           Toast.success('退款成功');
-          this.returnEmit();
+          this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
+          // this.returnEmit();
         } else {
           Toast(res.msg);
         }
         this.$refs.refundPopup.showState = false;
+        this.errorOperation = false;
+      }, err => {
+        this.errorOperation = false;
       })
-      
+    },
+    // 跳转商品详情
+    skipLinkDetails() {
+      if (this.order.type == 1) {
+        // 砍价
+        this.$router.push({ path: "/bargaining", query:{ id: this.order.sourceActiveId, token: this.token} });
+      } else if (this.order.type == 2) {
+        // 拼团
+        this.$router.push({ path: "/collage", query:{ id: this.order.sourceActiveId, token: this.token} });
+      }
+    },
+
+    // 跳转拼团详情
+    goDetails() {
+      if (this.order.type == 2) {
+        // 拼团
+        this.$router.push({ path: "/collage/my-collage-details", query:{ teamId: this.order.target, token: this.token} });
+        console.log("23132646464", this.order.target);
+      }
     }
   }
 };
@@ -343,6 +381,11 @@ export default {
     &.grey {
       background-color: #FAFAFA;
       color: #444954;
+    }
+    &.hollow-out {
+      border: 1px solid #F76D3F;
+      color: #F76D3F;
+      margin-bottom: 3vw;
     }
   }
   .refund-popup {

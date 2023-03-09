@@ -229,7 +229,8 @@ export default {
     },
     // 返回
     returnEmit() {
-      this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
+      this.$router.go(-1);
+      // this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
       // if () {
       //   // 从支付结果页面来
       //   this.$router.push({ path: "/order/"});
@@ -271,7 +272,8 @@ export default {
       this.$axios.post(ORDER_REFUND, {orderId: this.orderId, remark: this.remark}).then(res => {
         if (res.code == 0) {
           Toast.success('退款成功');
-          this.returnEmit();
+          // this.returnEmit();
+          this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
         } else {
           Toast(res.msg);
         }
@@ -290,7 +292,8 @@ export default {
           if (res.code == 0) {
             Toast.success('删除成功!');
             setTimeout(() => {
-              this.returnEmit();
+              // this.returnEmit();
+              this.$router.push({ path: "/order",  query:{ token: this.token, type: this.type, menuIndex: this.order.type } });
             }, 1000);
           } else {
             Toast(res.msg);

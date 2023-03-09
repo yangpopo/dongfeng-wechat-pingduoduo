@@ -22,6 +22,7 @@ export const GROUPBUY_QUERY_ONE = '/api/groupBuy/queryOne'; // 拼团详情
 export const GROUPBUY_ADD_TEAM = '/api/groupBuy/addTeam'; // 发起自己的拼团
 export const GROUPBUY_ADD_ORDER = '/api/groupBuy/addOrder'; // 参加别人的拼团
 export const GROUPBUY_DEALER = '/api/groupBuy/dealer'; // 拼团活动-经销商列表
+export const GROUPBUY_CHECK_STOCK = '/api/groupBuy/checkStock'; // 拼团活动-检查库存
 
 
 

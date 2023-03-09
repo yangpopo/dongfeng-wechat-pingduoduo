@@ -8,6 +8,8 @@ export default new Vuex.Store({
     token: '', // 口令
     type: '', // 来源 app  null: 小程序
     // orderList: [], // 订单列表
+    lat: '',
+    lng: '', 
   },
   mutations: {
     // 更新token
@@ -17,6 +19,12 @@ export default new Vuex.Store({
     // 更新type
     updateType(state, val) {
       state.type = val;
+    },
+    updateLat(state, val) {
+      state.lat = val;
+    },
+    updateLng(state, val) {
+      state.lng = val;
     },
     // // 缓存订单列表
     // cacheOrderList(state, val) {
